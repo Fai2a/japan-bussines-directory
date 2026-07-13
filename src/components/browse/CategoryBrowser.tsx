@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
+import { Link } from '@/i18n/navigation';
 import type { Category, CategoryGroup } from '@/lib/types';
 
 interface Props {
@@ -13,6 +14,9 @@ interface Props {
 export function CategoryBrowser({ groups, categories, initialGroup }: Props) {
   const [q, setQ] = useState('');
   const [group, setGroup] = useState(initialGroup ?? 'all');
+  const locale = useLocale();
+  const ja = locale === 'ja';
+  const t = useTranslations('browse');
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -35,9 +39,9 @@ export function CategoryBrowser({ groups, categories, initialGroup }: Props) {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search categories…"
+            placeholder={t('searchPlaceholder')}
             className="w-full rounded-md border border-rule bg-panel px-4 py-2.5 text-sm text-ink placeholder:text-meta focus:outline-none focus-visible:border-indigo"
-            aria-label="Search categories"
+            aria-label={t('searchPlaceholder')}
           />
         </div>
         {/* Index tabs as the group filter — the signature motif reused. */}
@@ -48,7 +52,7 @@ export function CategoryBrowser({ groups, categories, initialGroup }: Props) {
             className="idx-tab whitespace-nowrap"
             style={{ ['--tab-hue' as string]: '#8A8B85' }}
           >
-            All
+            {t('all')}
           </button>
           {groups.map((g) => (
             <button
@@ -58,7 +62,7 @@ export function CategoryBrowser({ groups, categories, initialGroup }: Props) {
               className="idx-tab whitespace-nowrap"
               style={{ ['--tab-hue' as string]: g.hue }}
             >
-              {g.name}
+              {ja ? g.nameJa : g.name}
             </button>
           ))}
         </div>
@@ -66,9 +70,9 @@ export function CategoryBrowser({ groups, categories, initialGroup }: Props) {
 
       {byGroup.length === 0 ? (
         <div className="panel p-10 text-center">
-          <p className="text-ink-soft">No categories match “{q}”.</p>
+          <p className="text-ink-soft">{t('noMatch', { query: q })}</p>
           <button onClick={() => { setQ(''); setGroup('all'); }} className="link mt-2 text-sm font-semibold">
-            Reset filters
+            {t('reset')}
           </button>
         </div>
       ) : (
@@ -77,9 +81,9 @@ export function CategoryBrowser({ groups, categories, initialGroup }: Props) {
             <section key={g.key} id={g.key}>
               <div className="mb-4 flex items-center gap-3">
                 <span className="h-4 w-1.5 rounded-full" style={{ background: g.hue }} />
-                <h2 className="font-display text-xl font-bold text-ink">{g.name}</h2>
-                <span className="font-jp text-sm text-meta">{g.nameJa}</span>
-                <span className="tnum ml-auto text-sm text-meta">{items.length} categories</span>
+                <h2 className="font-display text-xl font-bold text-ink">{ja ? g.nameJa : g.name}</h2>
+                {!ja && <span className="font-jp text-sm text-meta">{g.nameJa}</span>}
+                <span className="tnum ml-auto text-sm text-meta">{t('categoriesCount', { count: items.length })}</span>
               </div>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((c) => (

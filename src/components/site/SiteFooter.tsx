@@ -1,32 +1,7 @@
-import Link from 'next/link';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { Logo } from './Logo';
 import { TOTAL_COMPANIES } from '@/lib/categories';
-
-const RESOURCES = [
-  { href: '/network', label: 'Global Network' },
-  { href: '/holidays', label: 'Public Holidays in Japan' },
-  { href: '/saas', label: 'Data Hub' },
-  { href: '/buzz', label: 'Articles' },
-];
-const USERS = [
-  { href: '/get-listed', label: 'Get Listed' },
-  { href: '/remove-company', label: 'Remove Company' },
-  { href: '/account', label: 'Sign In' },
-  { href: '/contact', label: 'Support & Contact' },
-];
-const LEGAL = [
-  { href: '/legal/terms-of-use', label: 'Terms of Use' },
-  { href: '/legal/cookies', label: 'Cookies Policy' },
-  { href: '/legal/privacy', label: 'Privacy Policy' },
-  { href: '/legal/terms-of-service', label: 'Terms of Service' },
-];
-
-const STATS = [
-  { label: 'Companies', value: TOTAL_COMPANIES.toLocaleString('en-US') },
-  { label: 'Reviews', value: '486,203' },
-  { label: 'Photos', value: '1,240,880' },
-  { label: 'Products', value: '312,540' },
-];
 
 function Col({ title, links }: { title: string; links: { href: string; label: string }[] }) {
   return (
@@ -45,17 +20,53 @@ function Col({ title, links }: { title: string; links: { href: string; label: st
   );
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const locale = await getLocale();
+  const t = await getTranslations('footer');
+  const tc = await getTranslations('common');
+  const tNav = await getTranslations('nav');
+
+  const RESOURCES = [
+    { href: '/network', label: t('globalNetwork') },
+    { href: '/holidays', label: t('holidaysInJapan') },
+    { href: '/saas', label: tNav('dataHub') },
+    { href: '/buzz', label: tNav('articles') },
+  ];
+  const USERS = [
+    { href: '/get-listed', label: tc('getListed') },
+    { href: '/remove-company', label: t('removeCompany') },
+    { href: '/account', label: tc('signIn') },
+    { href: '/contact', label: t('support') },
+  ];
+  const LEGAL =
+    locale === 'ja'
+      ? [
+          { href: '/legal/terms-of-use', label: '利用規約' },
+          { href: '/legal/cookies', label: 'クッキーポリシー' },
+          { href: '/legal/privacy', label: 'プライバシーポリシー' },
+          { href: '/legal/terms-of-service', label: 'サービス利用規約' },
+        ]
+      : [
+          { href: '/legal/terms-of-use', label: 'Terms of Use' },
+          { href: '/legal/cookies', label: 'Cookies Policy' },
+          { href: '/legal/privacy', label: 'Privacy Policy' },
+          { href: '/legal/terms-of-service', label: 'Terms of Service' },
+        ];
+
+  const STATS = [
+    { label: t('companies'), value: TOTAL_COMPANIES.toLocaleString('en-US') },
+    { label: t('reviews'), value: '486,203' },
+    { label: t('photos'), value: '1,240,880' },
+    { label: t('products'), value: '312,540' },
+  ];
+
   return (
     <footer className="mt-16 border-t border-rule bg-[#f4f3ee]">
       <div className="shell py-12">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <Logo />
-            <p className="mt-3 max-w-xs text-sm text-ink-soft">
-              Japan’s local business directory. Discover, review, and connect with businesses across
-              every prefecture — in English and 日本語.
-            </p>
+            <p className="mt-3 max-w-xs text-sm text-ink-soft">{t('tagline')}</p>
             <div className="mt-4 flex gap-2">
               <a
                 href="https://facebook.com"
@@ -78,9 +89,9 @@ export function SiteFooter() {
             </div>
           </div>
 
-          <Col title="Resources" links={RESOURCES} />
-          <Col title="For Users" links={USERS} />
-          <Col title="Legal" links={LEGAL} />
+          <Col title={t('resources')} links={RESOURCES} />
+          <Col title={t('forUsers')} links={USERS} />
+          <Col title={t('legal')} links={LEGAL} />
         </div>
 
         <div className="mt-10 grid grid-cols-2 gap-4 border-t border-rule pt-6 sm:grid-cols-4">
@@ -93,8 +104,8 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-8 flex flex-col justify-between gap-2 border-t border-rule pt-6 text-xs text-meta sm:flex-row">
-          <p>© {new Date().getFullYear()} NihonPages. Independent directory. Not affiliated with any government body.</p>
-          <p>Made in Japan · データは参考情報です</p>
+          <p>{t('copyright', { year: new Date().getFullYear() })}</p>
+          <p>{t('madeIn')}</p>
         </div>
       </div>
     </footer>

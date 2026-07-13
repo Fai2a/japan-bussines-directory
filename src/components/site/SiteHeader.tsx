@@ -1,4 +1,5 @@
-import Link from 'next/link';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { Link } from '@/i18n/navigation';
 import { CATEGORY_GROUPS, CATEGORIES } from '@/lib/categories';
 import { CITIES } from '@/lib/cities';
 import { SearchBar } from './SearchBar';
@@ -6,17 +7,22 @@ import { MobileMenu } from './MobileMenu';
 import { LangSwitch } from './LangSwitch';
 import { Logo } from './Logo';
 
-const NAV = [
-  { href: '/categories', label: 'Browse' },
-  { href: '/locations', label: 'Cities' },
-  { href: '/saas', label: 'Data Hub' },
-  { href: '/buzz', label: 'Articles' },
-  { href: '/holidays', label: 'Holidays' },
-];
+export async function SiteHeader() {
+  const locale = await getLocale();
+  const t = await getTranslations('nav');
+  const tc = await getTranslations('common');
+  const ja = locale === 'ja';
 
-export function SiteHeader() {
-  const categoryNames = CATEGORIES.map((c) => c.name);
-  const cityNames = CITIES.map((c) => c.name);
+  const NAV = [
+    { href: '/categories', label: t('browse') },
+    { href: '/locations', label: t('cities') },
+    { href: '/saas', label: t('dataHub') },
+    { href: '/buzz', label: t('articles') },
+    { href: '/holidays', label: t('holidays') },
+  ];
+
+  const categoryNames = CATEGORIES.map((c) => (ja ? c.nameJa : c.name));
+  const cityNames = CITIES.map((c) => (ja ? c.nameJa : c.name));
 
   return (
     <header className="sticky top-0 z-40 border-b border-rule bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80">
@@ -44,10 +50,10 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           <LangSwitch />
           <Link href="/account" className="hidden text-sm font-medium text-ink-soft hover:text-ink sm:inline-block">
-            Sign in
+            {tc('signIn')}
           </Link>
           <Link href="/get-listed" className="btn btn-primary hidden sm:inline-flex">
-            Get Listed
+            {tc('getListed')}
           </Link>
           <MobileMenu nav={NAV} categoryNames={categoryNames} cityNames={cityNames} />
         </div>
@@ -64,7 +70,7 @@ export function SiteHeader() {
                 className="idx-tab whitespace-nowrap"
                 style={{ ['--tab-hue' as string]: g.hue }}
               >
-                {g.name}
+                {ja ? g.nameJa : g.name}
               </Link>
             ))}
           </nav>

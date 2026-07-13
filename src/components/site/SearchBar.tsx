@@ -1,7 +1,8 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
+import { useRouter } from '@/i18n/navigation';
 
 interface Props {
   categories: string[];
@@ -25,6 +26,7 @@ function useAutocomplete(pool: string[]) {
 
 export function SearchBar({ categories, cities, variant = 'hero', defaultQ = '', defaultWhere = '' }: Props) {
   const router = useRouter();
+  const t = useTranslations('search');
   const what = useAutocomplete(categories);
   const where = useAutocomplete(cities);
   const formRef = useRef<HTMLFormElement>(null);
@@ -129,15 +131,15 @@ export function SearchBar({ categories, cities, variant = 'hero', defaultQ = '',
           : 'gap-0 rounded border border-rule bg-panel'
       }`}
     >
-      <Field ac={what} name="q" placeholder="What are you looking for?" label="What are you looking for?" />
+      <Field ac={what} name="q" placeholder={t('whatPlaceholder')} label={t('whatPlaceholder')} />
       <div className={hero ? 'hidden w-px self-stretch bg-rule sm:block' : 'w-px self-stretch bg-rule'} />
-      <Field ac={where} name="where" placeholder="City or area" label="City or area" />
+      <Field ac={where} name="where" placeholder={t('wherePlaceholder')} label={t('wherePlaceholder')} />
       <button type="submit" className={`btn btn-primary shrink-0 ${hero ? 'sm:ml-1.5' : 'rounded-none'}`}>
         <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
           <circle cx="9" cy="9" r="6" />
           <path d="M14 14l4 4" strokeLinecap="round" />
         </svg>
-        Search
+        {t('searchButton')}
       </button>
     </form>
   );

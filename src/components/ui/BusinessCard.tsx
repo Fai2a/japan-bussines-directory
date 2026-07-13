@@ -1,10 +1,14 @@
-import Link from 'next/link';
+'use client';
+
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import type { Business } from '@/lib/types';
 import { CATEGORY_BY_SLUG } from '@/lib/categories';
 import { CITY_BY_SLUG } from '@/lib/cities';
 import { businessHue } from '@/lib/format';
-import { openStatus, isFeatured } from '@/lib/queries';
+import { isFeatured } from '@/lib/queries';
+import { useOpenStatusLabel } from '@/lib/useOpenStatusLabel';
 import { Stars } from './Stars';
 import { Monogram } from './Monogram';
 import { StatusBadge, FeaturedBadge, VerifiedBadge } from './Badges';
@@ -15,10 +19,12 @@ export function companyHref(b: Business) {
 }
 
 export function BusinessCard({ b, featured }: { b: Business; featured?: boolean }) {
+  const locale = useLocale();
+  const ja = locale === 'ja';
   const hue = businessHue(b);
   const cat = CATEGORY_BY_SLUG[b.categorySlugs[0]];
   const city = CITY_BY_SLUG[b.citySlug];
-  const status = openStatus(b);
+  const status = useOpenStatusLabel(b);
   const showFeatured = featured ?? isFeatured(b);
 
   return (
@@ -68,10 +74,10 @@ export function BusinessCard({ b, featured }: { b: Business; featured?: boolean 
             className="inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-medium"
             style={{ color: hue, background: `${hue}14` }}
           >
-            {cat?.name}
+            {ja ? cat?.nameJa : cat?.name}
           </span>
           <span className="text-meta">·</span>
-          <span className="truncate">{city?.name}</span>
+          <span className="truncate">{ja ? city?.nameJa : city?.name}</span>
           <span className="text-meta">·</span>
           <span className={status.open ? 'font-semibold text-ok' : 'text-meta'}>{status.label}</span>
           <VerifiedBadge tier={b.verify} />

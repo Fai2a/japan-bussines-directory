@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { LISTING_PLANS } from '@/lib/plans';
 import { usd } from '@/lib/format';
 

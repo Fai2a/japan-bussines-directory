@@ -30,18 +30,30 @@ export function byCity(slug: string): Business[] {
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
 /** Open-now status for a Business, given a reference time (defaults to now). */
-export function openStatus(b: Business, now = new Date()): { open: boolean; label: string } {
+export type OpenStatusKind = 'closedToday' | 'openNow' | 'opensLater' | 'closedTomorrow';
+
+/**
+ * `label` is an English fallback for non-i18n-aware call sites; `kind` + `time`
+ * let React components render a properly translated string via next-intl instead.
+ * `time` is always a clock string (e.g. "08:00"), never a day name.
+ */
+export function openStatus(
+  b: Business,
+  now = new Date(),
+): { open: boolean; label: string; kind: OpenStatusKind; time?: string } {
   const day = DAY_KEYS[now.getDay()];
   const today = b.hours[day];
-  if (!today) return { open: false, label: 'Closed today' };
+  if (!today) return { open: false, label: 'Closed today', kind: 'closedToday' };
   const [oh, om] = today[0].split(':').map(Number);
   const [ch, cm] = today[1].split(':').map(Number);
   const mins = now.getHours() * 60 + now.getMinutes();
   const openM = oh * 60 + om;
   const closeM = ch * 60 + cm;
-  if (mins >= openM && mins < closeM) return { open: true, label: `Open now · closes ${today[1]}` };
-  if (mins < openM) return { open: false, label: `Opens ${today[0]}` };
-  return { open: false, label: `Closed · opens ${today[0]} tomorrow` };
+  if (mins >= openM && mins < closeM)
+    return { open: true, label: `Open now · closes ${today[1]}`, kind: 'openNow', time: today[1] };
+  if (mins < openM)
+    return { open: false, label: `Opens ${today[0]}`, kind: 'opensLater', time: today[0] };
+  return { open: false, label: `Closed · opens ${today[0]} tomorrow`, kind: 'closedTomorrow', time: today[0] };
 }
 
 export function applyFilters(list: Business[], f: GridFilters): Business[] {

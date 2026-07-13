@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import type { Business } from '@/lib/types';
 import { CATEGORY_BY_SLUG, GROUP_BY_KEY } from '@/lib/categories';
 import { CITY_BY_SLUG } from '@/lib/cities';

@@ -1,7 +1,9 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { Suspense, useCallback } from 'react';
 
 interface Props {
   cities?: { slug: string; name: string }[];
@@ -9,17 +11,31 @@ interface Props {
   hideCity?: boolean;
 }
 
-const SORTS = [
-  { value: 'relevance', label: 'Relevance' },
-  { value: 'newest', label: 'Newest' },
-  { value: 'rating', label: 'Top rated' },
-  { value: 'alpha', label: 'A–Z' },
-];
+// useSearchParams() forces CSR-bailout/Suspense on any static page that
+// renders it. Wrapping here (rather than at every call site) means
+// category/location pages keep working as static generation without
+// each page having to remember the boundary.
+export function FilterBar(props: Props) {
+  return (
+    <Suspense fallback={<div className="h-[52px] border-b border-rule" />}>
+      <FilterBarInner {...props} />
+    </Suspense>
+  );
+}
 
-export function FilterBar({ cities = [], total, hideCity }: Props) {
+function FilterBarInner({ cities = [], total, hideCity }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const t = useTranslations('filters');
+  const tc = useTranslations('common');
+
+  const SORTS = [
+    { value: 'relevance', label: t('sortRelevance') },
+    { value: 'newest', label: t('sortNewest') },
+    { value: 'rating', label: t('sortRating') },
+    { value: 'alpha', label: t('sortAlpha') },
+  ];
 
   const setParam = useCallback(
     (key: string, value: string | null) => {
@@ -51,7 +67,7 @@ export function FilterBar({ cities = [], total, hideCity }: Props) {
             onChange={(e) => setParam('city', e.target.value || null)}
             className="rounded-sm border border-rule bg-panel px-2.5 py-1.5 text-sm text-ink"
           >
-            <option value="">All cities</option>
+            <option value="">{t('allCities')}</option>
             {cities.map((c) => (
               <option key={c.slug} value={c.slug}>{c.name}</option>
             ))}
@@ -64,20 +80,20 @@ export function FilterBar({ cities = [], total, hideCity }: Props) {
           onChange={(e) => setParam('rating', e.target.value || null)}
           className="rounded-sm border border-rule bg-panel px-2.5 py-1.5 text-sm text-ink"
         >
-          <option value="">Any rating</option>
-          <option value="4.5">4.5+ stars</option>
-          <option value="4">4.0+ stars</option>
-          <option value="3.5">3.5+ stars</option>
+          <option value="">{t('anyRating')}</option>
+          <option value="4.5">4.5+</option>
+          <option value="4">4.0+</option>
+          <option value="3.5">3.5+</option>
         </select>
 
         <button type="button" onClick={() => toggle('verified')} className={chip(active('verified'))} aria-pressed={active('verified')}>
-          Verified
+          {t('verified')}
         </button>
         <button type="button" onClick={() => toggle('photos')} className={chip(active('photos'))} aria-pressed={active('photos')}>
-          Has photos
+          {t('hasPhotos')}
         </button>
         <button type="button" onClick={() => toggle('open')} className={chip(active('open'))} aria-pressed={active('open')}>
-          Open now
+          {t('openNow')}
         </button>
 
         {hasFilters && (
@@ -86,12 +102,12 @@ export function FilterBar({ cities = [], total, hideCity }: Props) {
             onClick={() => router.push(pathname, { scroll: false })}
             className="text-sm font-medium text-meta underline-offset-2 hover:text-ink hover:underline"
           >
-            Clear
+            {t('clear')}
           </button>
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          <span className="tnum hidden text-sm text-meta sm:inline">{total.toLocaleString('en-US')} results</span>
+          <span className="tnum hidden text-sm text-meta sm:inline">{t('results', { count: total })}</span>
           <label className="sr-only" htmlFor="sort">Sort</label>
           <select
             id="sort"
@@ -100,7 +116,7 @@ export function FilterBar({ cities = [], total, hideCity }: Props) {
             className="rounded-sm border border-rule bg-panel px-2.5 py-1.5 text-sm text-ink"
           >
             {SORTS.map((s) => (
-              <option key={s.value} value={s.value}>Sort: {s.label}</option>
+              <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
         </div>

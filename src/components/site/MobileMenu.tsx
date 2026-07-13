@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { Link } from '@/i18n/navigation';
 import { SearchBar } from './SearchBar';
 import { CATEGORY_GROUPS } from '@/lib/categories';
 
@@ -13,6 +14,11 @@ interface Props {
 
 export function MobileMenu({ nav, categoryNames, cityNames }: Props) {
   const [open, setOpen] = useState(false);
+  const locale = useLocale();
+  const t = useTranslations('common');
+  const tNav = useTranslations('nav');
+  const ja = locale === 'ja';
+
   return (
     <div className="lg:hidden">
       <button
@@ -49,7 +55,7 @@ export function MobileMenu({ nav, categoryNames, cityNames }: Props) {
             ))}
           </nav>
           <div className="mt-4 border-t border-rule pt-4">
-            <p className="eyebrow mb-2">Category groups</p>
+            <p className="eyebrow mb-2">{tNav('categoryGroups')}</p>
             <div className="flex flex-wrap gap-1.5">
               {CATEGORY_GROUPS.map((g) => (
                 <Link
@@ -59,17 +65,17 @@ export function MobileMenu({ nav, categoryNames, cityNames }: Props) {
                   className="rounded-sm px-2 py-1 text-xs font-semibold"
                   style={{ color: g.hue, background: `${g.hue}14` }}
                 >
-                  {g.name}
+                  {ja ? g.nameJa : g.name}
                 </Link>
               ))}
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2 border-t border-rule pt-4">
             <Link href="/account" onClick={() => setOpen(false)} className="btn btn-secondary">
-              Sign in
+              {t('signIn')}
             </Link>
             <Link href="/get-listed" onClick={() => setOpen(false)} className="btn btn-primary">
-              Get Listed
+              {t('getListed')}
             </Link>
           </div>
         </div>

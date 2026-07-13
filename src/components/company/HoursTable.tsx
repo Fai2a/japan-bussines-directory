@@ -1,14 +1,15 @@
-import type { Business } from '@/lib/types';
-import { openStatus } from '@/lib/queries';
+'use client';
 
-const LABELS: Record<string, string> = {
-  mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
-};
-const ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+import { useTranslations } from 'next-intl';
+import type { Business } from '@/lib/types';
+import { useOpenStatusLabel } from '@/lib/useOpenStatusLabel';
+
+const ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 const JS_DAY = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
 export function HoursTable({ b }: { b: Business }) {
-  const status = openStatus(b);
+  const t = useTranslations('hours');
+  const status = useOpenStatusLabel(b);
   const todayKey = JS_DAY[new Date().getDay()];
 
   return (
@@ -24,8 +25,8 @@ export function HoursTable({ b }: { b: Business }) {
             const isToday = d === todayKey;
             return (
               <tr key={d} className={isToday ? 'font-semibold text-ink' : 'text-ink-soft'}>
-                <td className="py-1 pr-4">{LABELS[d]}{isToday && <span className="ml-1 text-2xs text-meta">(today)</span>}</td>
-                <td className="tnum py-1 text-right">{h ? `${h[0]} – ${h[1]}` : <span className="text-meta">Closed</span>}</td>
+                <td className="py-1 pr-4">{t(d)}{isToday && <span className="ml-1 text-2xs text-meta">{t('today')}</span>}</td>
+                <td className="tnum py-1 text-right">{h ? `${h[0]} – ${h[1]}` : <span className="text-meta">{t('closed')}</span>}</td>
               </tr>
             );
           })}

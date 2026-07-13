@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Business } from '@/lib/types';
 import { BusinessCard } from '@/components/ui/BusinessCard';
 import { Pagination } from '@/components/ui/Pagination';
@@ -27,6 +28,8 @@ export function ResultsView({
   baseQuery: string;
 }) {
   const [view, setView] = useState<'list' | 'map'>('list');
+  const t = useTranslations('filters');
+  const tCat = useTranslations('category');
 
   return (
     <div className="mt-6">
@@ -46,7 +49,7 @@ export function ResultsView({
               ) : (
                 <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden><path d="M10 2c3 0 5 2.2 5 5 0 3.5-5 11-5 11S5 10.5 5 7c0-2.8 2-5 5-5z" /><circle cx="10" cy="7" r="1.6" /></svg>
               )}
-              {v === 'list' ? 'List' : 'Map'}
+              {v === 'list' ? t('listView') : t('mapView')}
             </button>
           ))}
         </div>
@@ -58,7 +61,7 @@ export function ResultsView({
         <>
           {featured.length > 0 && (
             <div className="mb-6">
-              <p className="eyebrow mb-3">Featured · clearly labelled</p>
+              <p className="eyebrow mb-3">{tCat('featuredLabel')}</p>
               <div className="grid gap-3">
                 {featured.map((b) => <BusinessCard key={b.id} b={b} featured />)}
               </div>

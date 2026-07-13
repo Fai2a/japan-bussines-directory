@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 export function Pagination({ page, pages, baseQuery }: { page: number; pages: number; baseQuery: string }) {
   if (pages <= 1) return null;

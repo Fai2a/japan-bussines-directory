@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Review } from '@/lib/types';
 import { Stars } from '@/components/ui/Stars';
 import { shortDate } from '@/lib/format';
 
-function Histogram({ reviews, rating, count }: { reviews: Review[]; rating: number; count: number }) {
+function Histogram({ rating, count }: { rating: number; count: number }) {
+  const t = useTranslations('stars');
   // Derive a plausible distribution from the average when we only have samples.
   const dist = [5, 4, 3, 2, 1].map((star) => {
     const base = Math.max(0, 1 - Math.abs(star - rating) / 2.2);
@@ -18,7 +20,7 @@ function Histogram({ reviews, rating, count }: { reviews: Review[]; rating: numb
       <div className="text-center">
         <div className="tnum font-display text-5xl font-extrabold text-ink">{rating.toFixed(1)}</div>
         <Stars rating={rating} showValue={false} />
-        <div className="mt-1 text-xs text-meta">{count.toLocaleString('en-US')} reviews</div>
+        <div className="mt-1 text-xs text-meta">{count.toLocaleString('en-US')} {t('reviews')}</div>
       </div>
       <div className="flex-1 space-y-1.5">
         {dist.map((d) => (
@@ -35,12 +37,14 @@ function Histogram({ reviews, rating, count }: { reviews: Review[]; rating: numb
 }
 
 function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; businessId: number; businessName: string }) {
+  const t = useTranslations('company');
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [text, setText] = useState('');
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [needsSignIn, setNeedsSignIn] = useState(false);
 
   function persistLocal() {
     // Mirror into the account page's "My reviews" list.
@@ -59,12 +63,13 @@ function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; 
       body: JSON.stringify({ businessId, rating, text: text.trim() }),
     });
     if (res.status === 401) {
-      setError('Sign in to write a review — your account keeps your review history.');
+      setError(t('signInToReview'));
+      setNeedsSignIn(true);
       return false;
     }
     if (!res.ok) {
-      const data = (await res.json().catch(() => null)) as { error?: string } | null;
-      setError(data?.error ?? 'Something went wrong. Try again.');
+      setError(t('somethingWrong'));
+      setNeedsSignIn(false);
       return false;
     }
     return true;
@@ -73,8 +78,8 @@ function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; 
   if (sent) {
     return (
       <div className="panel border-ok/40 bg-ok/5 p-4 text-sm">
-        <p className="font-semibold text-ok">Thanks — your review was submitted for review.</p>
-        <p className="mt-1 text-ink-soft">Every review is checked by a human before it’s published (usually within 24 hours). We’ll email you when it’s live.</p>
+        <p className="font-semibold text-ok">{t('thanksTitle')}</p>
+        <p className="mt-1 text-ink-soft">{t('thanksBody')}</p>
       </div>
     );
   }
@@ -98,7 +103,7 @@ function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; 
       {/* Honeypot field for basic spam protection (hidden from real users). */}
       <input type="text" name="company_website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
       <div>
-        <label className="mb-1 block text-sm font-medium text-ink">Your rating</label>
+        <label className="mb-1 block text-sm font-medium text-ink">{t('yourRating')}</label>
         <div className="flex gap-1" onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map((n) => (
             <button
@@ -116,25 +121,25 @@ function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; 
         </div>
       </div>
       <div>
-        <label htmlFor="rv" className="mb-1 block text-sm font-medium text-ink">Your review</label>
+        <label htmlFor="rv" className="mb-1 block text-sm font-medium text-ink">{t('yourReview')}</label>
         <textarea
           id="rv"
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={4}
-          placeholder="Share what your visit was like — what stood out, and who it’s good for."
+          placeholder={t('reviewPlaceholder')}
           className="w-full rounded-md border border-rule bg-panel p-3 text-sm focus:outline-none focus-visible:border-indigo"
         />
-        <p className="mt-1 text-xs text-meta">Minimum 10 characters. Reviews are human-approved before publishing.</p>
+        <p className="mt-1 text-xs text-meta">{t('minChars')}</p>
       </div>
       {error && (
         <p className="rounded-sm bg-seal-wash px-3 py-2 text-sm text-seal-ink" role="alert">
-          {error}{error.startsWith('Sign in') && <> <a href="/account" className="font-semibold underline">Sign in</a></>}
+          {error}{needsSignIn && <> <a href="/account" className="font-semibold underline">Sign in</a></>}
         </p>
       )}
       <div className="flex items-center gap-2">
         <button type="submit" disabled={!rating || text.trim().length < 10 || busy} className="btn btn-primary disabled:cursor-not-allowed disabled:opacity-50">
-          {busy ? 'Submitting…' : 'Submit review'}
+          {busy ? t('submitting') : t('submitReview')}
         </button>
         <button type="button" onClick={onDone} className="btn btn-ghost">Cancel</button>
       </div>
@@ -144,16 +149,17 @@ function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; 
 
 export function ReviewSection({ reviews, rating, count, businessId, businessName }: { reviews: Review[]; rating: number; count: number; businessId: number; businessName: string }) {
   const [writing, setWriting] = useState(false);
+  const t = useTranslations('company');
 
   return (
     <section id="reviews" className="scroll-mt-24">
       <div className="mb-5 flex items-center justify-between gap-4">
-        <h2 className="font-display text-xl font-bold text-ink">Reviews</h2>
-        <button onClick={() => setWriting((w) => !w)} className="btn btn-secondary">Write a review</button>
+        <h2 className="font-display text-xl font-bold text-ink">{t('reviews')}</h2>
+        <button onClick={() => setWriting((w) => !w)} className="btn btn-secondary">{t('writeReview')}</button>
       </div>
 
       <div className="panel mb-5 p-5">
-        <Histogram reviews={reviews} rating={rating} count={count} />
+        <Histogram rating={rating} count={count} />
       </div>
 
       {writing && (
@@ -173,8 +179,8 @@ export function ReviewSection({ reviews, rating, count, businessId, businessName
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-ink">{r.author}</span>
                   {r.receiptVerified && (
-                    <span className="inline-flex items-center gap-1 rounded-sm bg-ok/10 px-1.5 py-0.5 text-2xs font-semibold text-ok" title="Reviewer uploaded a receipt; weighted higher in the average.">
-                      ✓ Visited — receipt verified
+                    <span className="inline-flex items-center gap-1 rounded-sm bg-ok/10 px-1.5 py-0.5 text-2xs font-semibold text-ok" title={t('receiptVerifiedTip')}>
+                      {t('receiptVerified')}
                     </span>
                   )}
                 </div>
@@ -185,7 +191,7 @@ export function ReviewSection({ reviews, rating, count, businessId, businessName
             <p className="mt-2 text-sm text-ink-soft">{r.text}</p>
             {r.ownerReply && (
               <div className="mt-3 rounded-md border-l-2 border-indigo bg-indigo-wash/50 p-3">
-                <p className="text-xs font-semibold text-indigo">Response from the owner · {shortDate(r.ownerReply.date)}</p>
+                <p className="text-xs font-semibold text-indigo">{t('responseFromOwner', { date: shortDate(r.ownerReply.date) })}</p>
                 <p className="mt-1 text-sm text-ink-soft">{r.ownerReply.text}</p>
               </div>
             )}
@@ -193,8 +199,8 @@ export function ReviewSection({ reviews, rating, count, businessId, businessName
         ))}
         {reviews.length === 0 && (
           <div className="panel p-8 text-center">
-            <p className="text-ink-soft">No reviews yet.</p>
-            <button onClick={() => setWriting(true)} className="btn btn-primary mt-3">Be the first to review</button>
+            <p className="text-ink-soft">{t('noReviewsYet')}</p>
+            <button onClick={() => setWriting(true)} className="btn btn-primary mt-3">{t('beFirstToReview')}</button>
           </div>
         )}
       </div>
