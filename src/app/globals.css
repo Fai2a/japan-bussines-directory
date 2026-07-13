@@ -1,0 +1,210 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --shell-x: clamp(1rem, 4vw, 2.5rem);
+
+    /* Type pairing. Loaded via <link> in layout with robust system fallbacks so
+       the app renders even when webfonts are unavailable.
+       - display: Archivo — a grotesque with real personality (page titles)
+       - body: Public Sans — the US civic design-system face; highly legible
+       - mono: IBM Plex Mono — tabular numerals for the Data Hub, phones, stats
+       - jp:  Noto Sans JP — Japanese glyph coverage for the JA locale */
+    --font-display: 'Archivo', 'Segoe UI', system-ui, sans-serif;
+    --font-body: 'Public Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', monospace;
+    --font-jp: 'Noto Sans JP', var(--font-body);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-paper text-ink font-body antialiased;
+    font-feature-settings: 'tnum' 0; /* tabular numerals opt-in per element */
+  }
+
+  /* Tabular numerals everywhere counts, prices and phone numbers appear. */
+  .tnum {
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  ::selection {
+    background: #d9e0ee;
+    color: #1a1c1e;
+  }
+
+  /* Visible, consistent focus — keyboard nav is a quality floor requirement. */
+  :focus-visible {
+    outline: 2px solid #3b4a6b;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .shell {
+    max-width: theme('maxWidth.shell');
+    margin-inline: auto;
+    padding-inline: var(--shell-x);
+  }
+
+  /* ---- Signature element: the index tab ------------------------------------
+     A physical paper-phone-book tab. Sits on a baseline rule; the active tab
+     rises and connects to the panel below. Each category group passes its hue
+     via --tab-hue. Restrained: color lives only here and in matching badges. */
+  .idx-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.95rem 0.55rem;
+    font-family: theme('fontFamily.body');
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--tab-hue, #41454b);
+    background: #f1f0ea;
+    border: 1px solid theme('colors.rule');
+    border-bottom: none;
+    border-radius: 7px 7px 0 0;
+    box-shadow: theme('boxShadow.tab');
+    transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease;
+  }
+  .idx-tab::before {
+    /* the color-coded index edge */
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 3px;
+    background: var(--tab-hue, #8a8b85);
+    border-radius: 7px 7px 0 0;
+    opacity: 0.55;
+  }
+  .idx-tab:hover {
+    background: #f7f6f1;
+    transform: translateY(-1px);
+  }
+  .idx-tab[data-active='true'] {
+    background: theme('colors.panel');
+    color: theme('colors.ink');
+    transform: translateY(1px);
+    z-index: 2;
+  }
+  .idx-tab[data-active='true']::before {
+    opacity: 1;
+    height: 4px;
+  }
+
+  /* ---- Buttons ------------------------------------------------------------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1;
+    padding: 0.7rem 1.1rem;
+    border-radius: 3px;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+      transform 0.05s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .btn-primary {
+    background: theme('colors.seal.DEFAULT');
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: theme('colors.seal.ink');
+  }
+  .btn-secondary {
+    background: theme('colors.panel');
+    color: theme('colors.ink');
+    border-color: theme('colors.rule');
+  }
+  .btn-secondary:hover {
+    border-color: #c9c8bf;
+    background: #fdfdfb;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: theme('colors.indigo.DEFAULT');
+  }
+  .btn-ghost:hover {
+    background: theme('colors.indigo.wash');
+  }
+
+  /* ---- Surfaces ------------------------------------------------------------ */
+  .panel {
+    background: theme('colors.panel');
+    border: 1px solid theme('colors.rule');
+    border-radius: 4px;
+  }
+
+  .hairline {
+    border-color: theme('colors.rule');
+  }
+
+  .link {
+    color: theme('colors.indigo.DEFAULT');
+    text-underline-offset: 2px;
+    transition: color 0.12s ease;
+  }
+  .link:hover {
+    color: theme('colors.indigo.soft');
+    text-decoration: underline;
+  }
+
+  /* Eyebrow / section label — small caps, wayfinding voice. */
+  .eyebrow {
+    font-family: theme('fontFamily.mono');
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: theme('colors.meta');
+    font-weight: 500;
+  }
+
+  /* Skeleton shimmer for data fetches. */
+  .skeleton {
+    background: linear-gradient(90deg, #efeee8 25%, #f6f5f0 37%, #efeee8 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+    border-radius: 3px;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: 0 0; }
+  }
+}

@@ -1,0 +1,312 @@
+// NihonPages — canonical data model.
+//
+// Local dev runs on SQLite (file:./dev.db) so the backend works with zero
+// installs. For production Postgres: set DATABASE_URL to a postgres:// URL and
+// change `provider` to "postgresql" — the models below are written to be
+// compatible with both (SQLite has no native enums or Json, so those fields
+// are Strings with documented values / JSON-serialized content).
+//
+// String-constant fields (would be enums on Postgres):
+//   User.role            USER | OWNER | MODERATOR | ADMIN
+//   Business.plan        NONE | BASIC | PREMIUM | LIFETIME
+//   Business.verify      NONE | COMMUNITY | ADMIN
+//   Business.status      DRAFT | IN_REVIEW | ACTIVE | SUSPENDED
+//   Review.status        PENDING | APPROVED | REJECTED   (also EditSuggestion, RemovalRequest)
+//   Business.hours       JSON string: {"mon":["09:00","18:00"]|null, ...}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  name          String?
+  passwordHash  String?
+  role          String        @default("USER")
+  emailVerified DateTime?
+  image         String?
+  locale        String        @default("en")
+  createdAt     DateTime      @default(now())
+  businesses    Business[]    @relation("OwnerBusinesses")
+  reviews       Review[]
+  favorites     Favorite[]
+  suggestions   EditSuggestion[]
+  questions     Question[]
+  answers       Answer[]
+  apiKeys       ApiKey[]
+  claims        ClaimRequest[]
+}
+
+model Prefecture {
+  id     String @id @default(cuid())
+  slug   String @unique
+  name   String
+  nameJa String
+  cities City[]
+}
+
+model City {
+  id           String     @id @default(cuid())
+  slug         String     @unique
+  name         String
+  nameJa       String
+  prefecture   Prefecture @relation(fields: [prefectureId], references: [id])
+  prefectureId String
+  businesses   Business[]
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  name      String
+  nameJa    String
+  group     String
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  parentId  String?
+  children  Category[] @relation("CategoryTree")
+  listings  BusinessCategory[]
+}
+
+model Business {
+  id              Int                @id @default(autoincrement())
+  slug            String
+  name            String
+  nameJa          String
+  blurb           String
+  owner           User?              @relation("OwnerBusinesses", fields: [ownerId], references: [id])
+  ownerId         String?
+  city            City               @relation(fields: [cityId], references: [id])
+  cityId          String
+  address         String
+  addressJa       String
+  lat             Float
+  lng             Float
+  phone           String
+  website         String?
+  email           String
+  established      Int
+  employees       Int
+  manager         String
+  corporateNumber String? // 法人番号
+  hours           String
+  plan            String             @default("NONE")
+  planExpiresAt   DateTime?
+  verify          String             @default("NONE")
+  status          String             @default("ACTIVE")
+  rating          Float              @default(0)
+  reviewCount     Int                @default(0)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  categories      BusinessCategory[]
+  keywords        Keyword[]
+  photos          Photo[]
+  products        Product[]
+  jobs            JobOffer[]
+  reviews         Review[]
+  questions       Question[]
+  favorites       Favorite[]
+  leads           LeadMessage[]
+  suggestions     EditSuggestion[]
+  removalRequests RemovalRequest[]
+  adPlacements    AdPlacement[]
+  claims          ClaimRequest[]
+
+  @@unique([id, slug])
+  @@index([cityId])
+}
+
+model BusinessCategory {
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  @@id([businessId, categoryId])
+}
+
+model Keyword {
+  id         String   @id @default(cuid())
+  value      String
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+}
+
+model Photo {
+  id         String   @id @default(cuid())
+  url        String
+  alt        String
+  credit     String?
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+}
+
+model Product {
+  id         String   @id @default(cuid())
+  name       String
+  price      Int
+  blurb      String
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+}
+
+model JobOffer {
+  id         String   @id @default(cuid())
+  title      String
+  type       String
+  salaryMin  Int
+  salaryMax  Int
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+}
+
+model Review {
+  id              String           @id @default(cuid())
+  business        Business         @relation(fields: [businessId], references: [id])
+  businessId      Int
+  author          User?            @relation(fields: [authorId], references: [id])
+  authorId        String?
+  authorName      String
+  rating          Int
+  text            String
+  receiptVerified Boolean          @default(false)
+  status          String           @default("PENDING")
+  createdAt       DateTime         @default(now())
+  ownerReply      OwnerReply?
+}
+
+model OwnerReply {
+  id        String   @id @default(cuid())
+  review    Review   @relation(fields: [reviewId], references: [id])
+  reviewId  String   @unique
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model Question {
+  id         String   @id @default(cuid())
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  author     User?    @relation(fields: [authorId], references: [id])
+  authorId   String?
+  text       String
+  createdAt  DateTime @default(now())
+  answers    Answer[]
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  author     User?    @relation(fields: [authorId], references: [id])
+  authorId   String?
+  text       String
+  isOwner    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Favorite {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  createdAt  DateTime @default(now())
+
+  @@id([userId, businessId])
+}
+
+model LeadMessage {
+  id         String   @id @default(cuid())
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  name       String
+  email      String
+  message    String
+  createdAt  DateTime @default(now())
+}
+
+model EditSuggestion {
+  id         String           @id @default(cuid())
+  business   Business         @relation(fields: [businessId], references: [id])
+  businessId Int
+  author     User?            @relation(fields: [authorId], references: [id])
+  authorId   String?
+  changes    String
+  status     String           @default("PENDING")
+  createdAt  DateTime         @default(now())
+}
+
+model RemovalRequest {
+  id         String           @id @default(cuid())
+  business   Business         @relation(fields: [businessId], references: [id])
+  businessId Int
+  email      String
+  reason     String
+  verified   Boolean          @default(false)
+  status     String           @default("PENDING")
+  createdAt  DateTime         @default(now())
+}
+
+// Document/法人番号 claims that need a human check before ownership transfers.
+// Fast-path claims (email/phone code) skip this table entirely — they set
+// Business.ownerId directly once the code is confirmed.
+model ClaimRequest {
+  id         String   @id @default(cuid())
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  method     String // "docs"
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  body        String
+  coverImage  String?
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model AdPlacement {
+  id         String   @id @default(cuid())
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  categorySlug String
+  citySlug     String
+  monthlyFee   Int
+  startsAt     DateTime
+  endsAt       DateTime
+
+  @@index([categorySlug, citySlug])
+}
+
+model ApiKey {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  keyHash    String   @unique
+  label      String
+  rateLimit  Int      @default(1000)
+  createdAt  DateTime @default(now())
+  revokedAt  DateTime?
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String
+  action    String
+  target    String
+  meta      String?
+  createdAt DateTime @default(now())
+}
