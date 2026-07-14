@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SignInCard } from '@/components/account/SignInCard';
@@ -20,23 +21,25 @@ function readJson<T>(key: string): T[] {
   try { return JSON.parse(localStorage.getItem(key) || '[]') as T[]; } catch { return []; }
 }
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'favorites', label: 'Favorites' },
-  { id: 'reviews', label: 'My reviews' },
-  { id: 'edits', label: 'Suggested edits' },
-  { id: 'notifications', label: 'Notifications' },
-];
-
 export default function AccountPage() {
   const { user, ready, signOut } = useAuth();
   const [tab, setTab] = useState<Tab>('favorites');
+  const t = useTranslations('account');
+  const tc = useTranslations('common');
+
+  const TABS: { id: Tab; label: string }[] = [
+    { id: 'favorites', label: t('tabFavorites') },
+    { id: 'reviews', label: t('tabReviews') },
+    { id: 'edits', label: t('tabEdits') },
+    { id: 'notifications', label: t('tabNotifications') },
+  ];
 
   if (!ready) return <div className="shell py-16"><div className="skeleton mx-auto h-64 max-w-md rounded-md" /></div>;
 
   if (!user) {
     return (
       <div className="shell py-12">
-        <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Account' }]} />
+        <Breadcrumbs items={[{ href: '/', label: tc('home') }, { label: t('crumb') }]} />
         <div className="mt-8">
           <SignInCard />
         </div>
@@ -46,7 +49,7 @@ export default function AccountPage() {
 
   return (
     <div className="shell py-8">
-      <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Account' }]} />
+      <Breadcrumbs items={[{ href: '/', label: tc('home') }, { label: t('crumb') }]} />
       <header className="mt-4 flex flex-wrap items-center justify-between gap-4 border-b border-rule pb-6">
         <div className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-full bg-indigo text-lg font-bold text-white">
@@ -58,23 +61,23 @@ export default function AccountPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          {user.role === 'owner' && <Link href="/dashboard" className="btn btn-secondary">Owner dashboard</Link>}
-          {user.role === 'admin' && <Link href="/admin" className="btn btn-secondary">Admin panel</Link>}
-          <button onClick={signOut} className="btn btn-ghost">Sign out</button>
+          {user.role === 'owner' && <Link href="/dashboard" className="btn btn-secondary">{t('ownerDashboard')}</Link>}
+          {user.role === 'admin' && <Link href="/admin" className="btn btn-secondary">{t('adminPanel')}</Link>}
+          <button onClick={signOut} className="btn btn-ghost">{tc('signOut')}</button>
         </div>
       </header>
 
       <nav className="mt-6 flex flex-wrap gap-1 border-b border-rule" aria-label="Account sections">
-        {TABS.map((t) => (
+        {TABS.map((tItem) => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            aria-current={tab === t.id}
+            key={tItem.id}
+            onClick={() => setTab(tItem.id)}
+            aria-current={tab === tItem.id}
             className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
-              tab === t.id ? 'border-seal text-ink' : 'border-transparent text-meta hover:text-ink'
+              tab === tItem.id ? 'border-seal text-ink' : 'border-transparent text-meta hover:text-ink'
             }`}
           >
-            {t.label}
+            {tItem.label}
           </button>
         ))}
       </nav>
@@ -101,13 +104,15 @@ function EmptyState({ title, body, cta }: { title: string; body: string; cta?: {
 
 function FavoritesTab() {
   const { ids, ready } = useFavorites();
+  const t = useTranslations('account');
+  const tc = useTranslations('common');
   if (!ready) return <div className="grid gap-3 sm:grid-cols-2">{[0, 1].map((i) => <div key={i} className="skeleton h-32 rounded-md" />)}</div>;
   const businesses = ids.map((id) => BUSINESS_BY_ID[id]).filter(Boolean);
   if (businesses.length === 0)
-    return <EmptyState title="No favorites yet" body="Tap the bookmark on any listing to save it here for quick access — even offline once installed." cta={{ href: '/categories', label: 'Browse the directory' }} />;
+    return <EmptyState title={t('noFavoritesTitle')} body={t('noFavoritesBody')} cta={{ href: '/categories', label: tc('browseDirectory') }} />;
   return (
     <div>
-      <p className="mb-3 text-sm text-meta">{businesses.length} saved {businesses.length === 1 ? 'business' : 'businesses'}</p>
+      <p className="mb-3 text-sm text-meta">{t('savedCount', { count: businesses.length })}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         {businesses.map((b) => <BusinessCard key={b.id} b={b} />)}
       </div>
@@ -117,16 +122,17 @@ function FavoritesTab() {
 
 function ReviewsTab() {
   const [reviews, setReviews] = useState<StoredReview[]>([]);
+  const t = useTranslations('account');
   useEffect(() => { setReviews(readJson<StoredReview>('np_my_reviews')); }, []);
   if (reviews.length === 0)
-    return <EmptyState title="No reviews yet" body="Reviews you write appear here. Each one is checked by a human before it goes live." cta={{ href: '/categories', label: 'Find a business to review' }} />;
+    return <EmptyState title={t('noReviewsTitle')} body={t('noReviewsBody')} cta={{ href: '/categories', label: t('findBusinessToReview') }} />;
   return (
     <ul className="space-y-3">
       {reviews.map((r, i) => (
         <li key={i} className="panel p-4">
           <div className="flex items-center justify-between gap-3">
             <span className="font-display font-bold text-ink">{r.businessName}</span>
-            <span className={`rounded-sm px-1.5 py-0.5 text-2xs font-semibold uppercase ${r.status === 'published' ? 'bg-ok/10 text-ok' : 'bg-warn/15 text-warn'}`}>{r.status}</span>
+            <span className={`rounded-sm px-1.5 py-0.5 text-2xs font-semibold uppercase ${r.status === 'published' ? 'bg-ok/10 text-ok' : 'bg-warn/15 text-warn'}`}>{r.status === 'published' ? t('statusPublished') : t('statusPending')}</span>
           </div>
           <p className="tnum mt-1 text-sm text-seal">{'★'.repeat(r.rating)}<span className="text-rule">{'★'.repeat(5 - r.rating)}</span></p>
           <p className="mt-1 text-sm text-ink-soft">{r.text}</p>
@@ -139,9 +145,10 @@ function ReviewsTab() {
 
 function EditsTab() {
   const [edits, setEdits] = useState<StoredEdit[]>([]);
+  const t = useTranslations('account');
   useEffect(() => { setEdits(readJson<StoredEdit>('np_my_edits')); }, []);
   if (edits.length === 0)
-    return <EmptyState title="No suggested edits" body="Spotted wrong hours or a changed phone number? Use “Suggest an edit” on any profile — your suggestions show up here." />;
+    return <EmptyState title={t('noEditsTitle')} body={t('noEditsBody')} />;
   return (
     <ul className="space-y-3">
       {edits.map((e, i) => (
@@ -151,7 +158,7 @@ function EditsTab() {
             <p className="text-sm text-ink-soft">{e.summary}</p>
             <p className="text-xs text-meta">{shortDate(e.date)}</p>
           </div>
-          <span className={`rounded-sm px-1.5 py-0.5 text-2xs font-semibold uppercase ${e.status === 'applied' ? 'bg-ok/10 text-ok' : 'bg-warn/15 text-warn'}`}>{e.status}</span>
+          <span className={`rounded-sm px-1.5 py-0.5 text-2xs font-semibold uppercase ${e.status === 'applied' ? 'bg-ok/10 text-ok' : 'bg-warn/15 text-warn'}`}>{e.status === 'applied' ? t('statusApplied') : t('statusPending')}</span>
         </li>
       ))}
     </ul>
@@ -159,19 +166,22 @@ function EditsTab() {
 }
 
 const PREF_KEY = 'np_notif_prefs';
-const PREFS = [
-  { id: 'digest', label: 'Weekly digest', help: 'New businesses in your saved cities and categories.' },
-  { id: 'replies', label: 'Review replies', help: 'When an owner responds to a review you wrote.' },
-  { id: 'answers', label: 'Q&A answers', help: 'When a question you asked gets answered.' },
-  { id: 'product', label: 'Product news', help: 'Occasional updates about NihonPages features.' },
-];
 
 function NotificationsTab() {
+  const t = useTranslations('account');
   const [prefs, setPrefs] = useState<Record<string, boolean>>({ digest: true, replies: true, answers: true, product: false });
   const [saved, setSaved] = useState(false);
   useEffect(() => {
     try { const raw = localStorage.getItem(PREF_KEY); if (raw) setPrefs(JSON.parse(raw)); } catch {}
   }, []);
+
+  const PREFS = [
+    { id: 'digest', label: t('digestTitle'), help: t('digestHelp') },
+    { id: 'replies', label: t('repliesTitle'), help: t('repliesHelp') },
+    { id: 'answers', label: t('answersTitle'), help: t('answersHelp') },
+    { id: 'product', label: t('productTitle'), help: t('productHelp') },
+  ];
+
   function toggle(id: string) {
     const next = { ...prefs, [id]: !prefs[id] };
     setPrefs(next);
@@ -197,7 +207,7 @@ function NotificationsTab() {
           </button>
         </div>
       ))}
-      {saved && <p className="p-3 text-center text-xs text-ok">Preferences saved</p>}
+      {saved && <p className="p-3 text-center text-xs text-ok">{t('preferencesSaved')}</p>}
     </div>
   );
 }

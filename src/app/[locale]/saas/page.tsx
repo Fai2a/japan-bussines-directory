@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { DATAHUB_PLANS } from '@/lib/plans';
@@ -9,17 +10,20 @@ export const metadata: Metadata = {
   description: 'B2B access to the full NihonPages company database: advanced filters, saved searches, CSV export, and a read-only API. No ads.',
 };
 
-export default function SaasPage() {
+export default async function SaasPage() {
+  const t = await getTranslations('saas');
+  const tc = await getTranslations('common');
+
   return (
     <div className="shell py-8">
-      <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Data Hub' }]} />
+      <Breadcrumbs items={[{ href: '/', label: tc('home') }, { label: t('crumb') }]} />
 
       <section className="mt-6 grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
         <div>
-          <span className="eyebrow">NihonPages Data Hub</span>
-          <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-ink">Every company in Japan. One clean table.</h1>
-          <p className="mt-3 max-w-lg text-lg text-ink-soft">Search, filter and export {`222,410`} company records through a fast, dense interface built for sales, research and operations teams. No ads, ever.</p>
-          <div className="mt-6 flex gap-3"><Link href="/saas/app" className="btn btn-primary">Open the app</Link><a href="#pricing" className="btn btn-secondary">See pricing</a></div>
+          <span className="eyebrow">{t('eyebrow')}</span>
+          <h1 className="mt-2 font-display text-4xl font-extrabold tracking-tight text-ink">{t('title')}</h1>
+          <p className="mt-3 max-w-lg text-lg text-ink-soft">{t('subtitle', { count: '222,410' })}</p>
+          <div className="mt-6 flex gap-3"><Link href="/saas/app" className="btn btn-primary">{t('openApp')}</Link><a href="#pricing" className="btn btn-secondary">{t('seePricing')}</a></div>
         </div>
         <div id="demo" className="panel overflow-hidden p-1">
           <div className="grid grid-cols-[1.4fr_1fr_1fr_1.2fr] gap-px overflow-hidden rounded bg-rule font-mono text-2xs">
@@ -35,26 +39,26 @@ export default function SaasPage() {
               </div>
             ))}
           </div>
-          <Link href="/saas/app" className="block px-3 py-2 text-2xs font-semibold text-indigo hover:underline">Open the live table app — filters, saved searches, CSV export with quotas →</Link>
+          <Link href="/saas/app" className="block px-3 py-2 text-2xs font-semibold text-indigo hover:underline">{t('openLiveApp')}</Link>
         </div>
       </section>
 
       <section id="pricing" className="mt-14">
-        <h2 className="mb-6 font-display text-2xl font-bold text-ink">Plans & pricing</h2>
+        <h2 className="mb-6 font-display text-2xl font-bold text-ink">{t('plansPricing')}</h2>
         <div className="grid gap-5 lg:grid-cols-3">
           {DATAHUB_PLANS.map((p) => (
             <div key={p.id} className={`panel flex flex-col p-6 ${p.highlighted ? 'border-indigo ring-1 ring-indigo/20' : ''}`}>
-              {p.highlighted && <span className="mb-2 self-start rounded-sm bg-indigo px-2 py-1 text-2xs font-bold uppercase text-white">Best value</span>}
+              {p.highlighted && <span className="mb-2 self-start rounded-sm bg-indigo px-2 py-1 text-2xs font-bold uppercase text-white">{t('bestValue')}</span>}
               <h3 className="font-display text-xl font-bold text-ink">{p.name}</h3>
-              <div className="mt-3 flex items-baseline gap-1"><span className="tnum font-display text-4xl font-extrabold text-ink">{usd(p.price)}</span><span className="text-sm text-meta">/mo</span></div>
+              <div className="mt-3 flex items-baseline gap-1"><span className="tnum font-display text-4xl font-extrabold text-ink">{usd(p.price)}</span><span className="text-sm text-meta">{t('perMonth')}</span></div>
               <dl className="mt-4 space-y-1 border-y border-rule py-4 text-sm">
-                <div className="flex justify-between"><dt className="text-meta">Contacts</dt><dd className="tnum font-medium text-ink">{p.contacts}</dd></div>
-                <div className="flex justify-between"><dt className="text-meta">Exports</dt><dd className="tnum font-medium text-ink">{p.exports}</dd></div>
+                <div className="flex justify-between"><dt className="text-meta">{t('contacts')}</dt><dd className="tnum font-medium text-ink">{p.contacts}</dd></div>
+                <div className="flex justify-between"><dt className="text-meta">{t('exports')}</dt><dd className="tnum font-medium text-ink">{p.exports}</dd></div>
               </dl>
               <ul className="mt-4 flex-1 space-y-2 text-sm text-ink-soft">
                 {p.features.map((f) => <li key={f} className="flex gap-2"><span className="text-ok">✓</span>{f}</li>)}
               </ul>
-              <Link href="/contact" className={`btn mt-5 ${p.highlighted ? 'btn-primary' : 'btn-secondary'}`}>Start {p.name}</Link>
+              <Link href="/contact" className={`btn mt-5 ${p.highlighted ? 'btn-primary' : 'btn-secondary'}`}>{t('start', { plan: p.name })}</Link>
             </div>
           ))}
         </div>

@@ -9,7 +9,7 @@ import { shortDate, usd } from '@/lib/format';
 import { Monogram } from '@/components/ui/Monogram';
 import { Stars } from '@/components/ui/Stars';
 
-type Tab = 'dashboard' | 'listings' | 'reviews' | 'removals';
+type Tab = 'dashboard' | 'listings' | 'reviews' | 'removals' | 'reports';
 
 export default function AdminPage() {
   const { user, ready, signOut } = useAuth();
@@ -47,7 +47,7 @@ export default function AdminPage() {
       </header>
 
       <nav className="mt-5 flex flex-wrap gap-1 border-b border-rule" aria-label="Admin sections">
-        {(['dashboard', 'listings', 'reviews', 'removals'] as Tab[]).map((t) => (
+        {(['dashboard', 'listings', 'reviews', 'removals', 'reports'] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)} aria-current={tab === t}
             className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium capitalize transition-colors ${tab === t ? 'border-seal text-ink' : 'border-transparent text-meta hover:text-ink'}`}>
             {t}
@@ -60,6 +60,7 @@ export default function AdminPage() {
         {tab === 'listings' && <ListingsQueue />}
         {tab === 'reviews' && <ReviewsQueue />}
         {tab === 'removals' && <RemovalsQueue />}
+        {tab === 'reports' && <ReportsQueue />}
       </div>
     </div>
   );
@@ -295,6 +296,63 @@ function RemovalsQueue() {
               <p className="text-xs text-meta">Reason: {r.reason} · from {r.email}</p>
             </div>
             <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'approve')} onReject={() => decide(r.id, 'decline')} approveLabel="Remove" rejectLabel="Decline" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface PendingReport {
+  id: string; reason: string; details: string; email: string | null;
+  business: { id: number; slug: string; name: string }; createdAt: string;
+}
+
+const REASON_LABEL: Record<string, string> = {
+  'wrong-info': 'Wrong information', closed: 'Permanently closed', spam: 'Spam / duplicate', abuse: 'Abusive review', other: 'Other',
+};
+
+function ReportsQueue() {
+  const [reports, setReports] = useState<PendingReport[] | null>(null);
+  const [decided, setDecided] = useState<Record<string, Decision>>({});
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch('/api/admin/reports')
+      .then(async (res) => {
+        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? 'Failed to load queue.');
+        return res.json();
+      })
+      .then((data: { reports: PendingReport[] }) => setReports(data.reports))
+      .catch((e: Error) => setError(e.message));
+  }, []);
+
+  async function decide(id: string, action: 'resolve' | 'dismiss') {
+    const res = await fetch('/api/admin/reports', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, action }),
+    });
+    if (res.ok) setDecided((d) => ({ ...d, [id]: action === 'resolve' ? 'approved' : 'rejected' }));
+  }
+
+  if (error) return <div className="panel p-6 text-sm text-seal-ink">{error}</div>;
+  if (!reports) return <div className="space-y-2">{[0, 1, 2].map((i) => <div key={i} className="skeleton h-16 rounded-md" />)}</div>;
+
+  const pendingCount = reports.filter((r) => !decided[r.id]).length;
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-meta">{pendingCount} report{pendingCount === 1 ? '' : 's'} awaiting review.</p>
+      {reports.length === 0 && <div className="panel p-8 text-center text-ink-soft">Queue is clear — nothing pending.</div>}
+      <div className="space-y-2">
+        {reports.map((r) => (
+          <div key={r.id} className="panel flex items-center gap-3 p-3">
+            <div className="min-w-0 flex-1">
+              <Link href={`/company/${r.business.id}/${r.business.slug}`} className="font-medium text-ink hover:text-indigo">{r.business.name}</Link>
+              <p className="text-xs text-meta">{REASON_LABEL[r.reason] ?? r.reason} · {r.details}{r.email && <> · from {r.email}</>}</p>
+            </div>
+            <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'resolve')} onReject={() => decide(r.id, 'dismiss')} approveLabel="Resolve" rejectLabel="Dismiss" />
           </div>
         ))}
       </div>

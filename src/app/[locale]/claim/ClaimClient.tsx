@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SignInCard } from '@/components/account/SignInCard';
 import { GROUP_BY_KEY } from '@/lib/categories';
@@ -11,11 +12,6 @@ import { Monogram } from '@/components/ui/Monogram';
 import { VerifiedBadge } from '@/components/ui/Badges';
 
 type Method = 'email' | 'phone' | 'docs';
-const METHODS: { id: Method; label: string; desc: string; icon: string }[] = [
-  { id: 'email', label: 'Email verification', desc: 'We send a code to the address on file for this listing.', icon: '✉︎' },
-  { id: 'phone', label: 'Phone verification', desc: 'We call or SMS the listed business number with a code.', icon: '☎' },
-  { id: 'docs', label: 'Document / 法人番号', desc: 'Match against the National Tax Agency corporate number, checked by our team.', icon: '🏛' },
-];
 
 interface Result {
   id: number; slug: string; name: string; nameJa: string; address: string;
@@ -26,6 +22,14 @@ export function ClaimClient() {
   const params = useSearchParams();
   const { data: session, status: authStatus, update: refreshSession } = useSession();
   const preId = Number(params.get('id'));
+  const t = useTranslations('claim');
+  const tc = useTranslations('common');
+
+  const METHODS: { id: Method; label: string; desc: string; icon: string }[] = [
+    { id: 'email', label: t('methodEmailLabel'), desc: t('methodEmailDesc'), icon: '✉︎' },
+    { id: 'phone', label: t('methodPhoneLabel'), desc: t('methodPhoneDesc'), icon: '☎' },
+    { id: 'docs', label: t('methodDocsLabel'), desc: t('methodDocsDesc'), icon: '🏛' },
+  ];
 
   const [business, setBusiness] = useState<Result | null>(null);
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
@@ -51,11 +55,11 @@ export function ClaimClient() {
   useEffect(() => {
     const q = query.trim();
     if (q.length < 2) { setMatches([]); return; }
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       const res = await fetch(`/api/businesses/search?q=${encodeURIComponent(q)}`);
       if (res.ok) setMatches((await res.json()).results as Result[]);
     }, 200);
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [query]);
 
   function pick(b: Result) {
@@ -75,14 +79,14 @@ export function ClaimClient() {
     });
     const data = (await res.json().catch(() => null)) as { ok?: boolean; queued?: boolean; error?: string } | null;
     setBusy(false);
-    if (!res.ok || !data?.ok) { setError(data?.error ?? 'Could not start verification.'); return; }
+    if (!res.ok || !data?.ok) { setError(data?.error ?? t('couldNotStart')); return; }
     setStep(2);
   }
 
   async function verify(e: React.FormEvent) {
     e.preventDefault();
     if (!business) return;
-    if (!/^\d{6}$/.test(code.trim())) { setError('Enter the 6-digit code we sent you.'); return; }
+    if (!/^\d{6}$/.test(code.trim())) { setError(t('enterCodeHint')); return; }
     setBusy(true);
     setError('');
     const res = await fetch('/api/claim', {
@@ -92,7 +96,7 @@ export function ClaimClient() {
     });
     const data = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
     setBusy(false);
-    if (!res.ok || !data?.ok) { setError(data?.error ?? 'Verification failed.'); return; }
+    if (!res.ok || !data?.ok) { setError(data?.error ?? t('verificationFailed')); return; }
     await refreshSession(); // pick up USER -> OWNER role promotion immediately
     setStep(3);
   }
@@ -104,9 +108,9 @@ export function ClaimClient() {
   if (!session?.user) {
     return (
       <div className="shell py-8">
-        <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Claim a listing' }]} />
+        <Breadcrumbs items={[{ href: '/', label: tc('home') }, { label: t('crumb') }]} />
         <div className="mt-8">
-          <SignInCard heading="Sign in to claim a listing" intro="Claiming links a business to your account so you can manage it." defaultRole="owner" />
+          <SignInCard heading={t('signInHeading')} intro={t('signInIntro')} defaultRole="owner" />
         </div>
       </div>
     );
@@ -114,15 +118,15 @@ export function ClaimClient() {
 
   return (
     <div className="shell py-8">
-      <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Claim a listing' }]} />
+      <Breadcrumbs items={[{ href: '/', label: tc('home') }, { label: t('crumb') }]} />
       <div className="mx-auto mt-4 max-w-xl">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink">Claim your listing</h1>
-        <p className="mt-2 text-ink-soft">Verify you represent the business and get instant edit access — no duplicate profiles.</p>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink">{t('title')}</h1>
+        <p className="mt-2 text-ink-soft">{t('subtitle')}</p>
 
         {step === 0 && (
           <div className="panel mt-6 p-5">
-            <label className="mb-1 block text-sm font-medium text-ink">Find your business</label>
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by business name…" className="w-full rounded-md border border-rule bg-panel px-3 py-2 text-sm focus:outline-none focus-visible:border-indigo" autoFocus />
+            <label className="mb-1 block text-sm font-medium text-ink">{t('findBusiness')}</label>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('searchPlaceholder')} className="w-full rounded-md border border-rule bg-panel px-3 py-2 text-sm focus:outline-none focus-visible:border-indigo" autoFocus />
             <ul className="mt-2 divide-y divide-rule">
               {matches.map((b) => (
                 <li key={b.id}>
@@ -130,13 +134,13 @@ export function ClaimClient() {
                     <Monogram name={b.name} hue={GROUP_BY_KEY[b.group as keyof typeof GROUP_BY_KEY]?.hue ?? '#8A8B85'} size="sm" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-medium text-ink">{b.name}</span>
-                      <span className="block truncate text-xs text-meta">{b.category} · {b.city}{b.claimed ? ' · Already claimed' : ''}</span>
+                      <span className="block truncate text-xs text-meta">{b.category} · {b.city}{b.claimed ? t('alreadyClaimed') : ''}</span>
                     </span>
                   </button>
                 </li>
               ))}
               {query.trim().length >= 2 && matches.length === 0 && (
-                <li className="py-3 text-sm text-meta">No match. <Link href="/get-listed" className="link">Create a new listing</Link> instead.</li>
+                <li className="py-3 text-sm text-meta">{t('noMatch')} <Link href="/get-listed" className="link">{t('createNewListing')}</Link> {t('instead')}</li>
               )}
             </ul>
           </div>
@@ -151,11 +155,11 @@ export function ClaimClient() {
                 <p className="truncate text-xs text-meta">{business.address}</p>
               </div>
               <VerifiedBadge tier={business.verify} />
-              <button onClick={() => { setBusiness(null); setStep(0); setError(''); }} className="text-xs font-medium text-indigo hover:underline">Change</button>
+              <button onClick={() => { setBusiness(null); setStep(0); setError(''); }} className="text-xs font-medium text-indigo hover:underline">{t('change')}</button>
             </div>
 
             <div className="panel p-5">
-              <p className="eyebrow mb-3">Choose how to verify</p>
+              <p className="eyebrow mb-3">{t('chooseMethod')}</p>
               <div className="space-y-2">
                 {METHODS.map((m) => (
                   <button key={m.id} onClick={() => setMethod(m.id)} className={`flex w-full items-start gap-3 rounded-md border p-3 text-left transition-colors ${method === m.id ? 'border-seal ring-1 ring-seal/25' : 'border-rule hover:border-[#c9c8bf]'}`}>
@@ -168,7 +172,7 @@ export function ClaimClient() {
                 ))}
               </div>
               {error && <p className="mt-3 text-sm text-seal">{error}</p>}
-              <button onClick={startVerification} disabled={busy} className="btn btn-primary mt-4 w-full disabled:opacity-60">{busy ? 'Sending…' : 'Send verification'}</button>
+              <button onClick={startVerification} disabled={busy} className="btn btn-primary mt-4 w-full disabled:opacity-60">{busy ? t('sending') : t('sendVerification')}</button>
             </div>
           </div>
         )}
@@ -176,20 +180,20 @@ export function ClaimClient() {
         {step === 2 && business && (
           method === 'docs' ? (
             <div className="panel mt-6 p-5">
-              <h2 className="font-display font-bold text-ink">Submitted for review</h2>
-              <p className="mt-1 text-sm text-ink-soft">We’ll match your claim against National Tax Agency open data and a human will check it within 1–2 business days. You’ll see it under your account once approved.</p>
-              <Link href="/account" className="btn btn-primary mt-4 w-full">Done</Link>
+              <h2 className="font-display font-bold text-ink">{t('docsSubmittedTitle')}</h2>
+              <p className="mt-1 text-sm text-ink-soft">{t('docsSubmittedBody')}</p>
+              <Link href="/account" className="btn btn-primary mt-4 w-full">{t('done')}</Link>
             </div>
           ) : (
             <form onSubmit={verify} className="panel mt-6 p-5">
-              <h2 className="font-display font-bold text-ink">Enter your code</h2>
+              <h2 className="font-display font-bold text-ink">{t('enterCodeTitle')}</h2>
               <p className="mt-1 text-sm text-ink-soft">
-                We sent a 6-digit code {method === 'email' ? 'to the email on file' : 'by SMS to the phone on file'} for this listing.
+                {method === 'email' ? t('enterCodeEmail') : t('enterCodePhone')}
               </p>
               <input inputMode="numeric" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="••••••" className="tnum mt-4 w-full rounded-md border border-rule bg-panel px-3 py-3 text-center font-mono text-2xl tracking-[0.4em] focus:outline-none focus-visible:border-indigo" autoFocus />
               {error && <p className="mt-2 text-sm text-seal">{error}</p>}
-              <p className="mt-2 text-xs text-meta">Demo: enter any 6 digits (there's no real SMS/email dispatch here).</p>
-              <button type="submit" disabled={busy} className="btn btn-primary mt-4 w-full disabled:opacity-60">{busy ? 'Verifying…' : 'Verify & claim'}</button>
+              <p className="mt-2 text-xs text-meta">{method === 'phone' ? t('demoHint') : t('emailRealHint')}</p>
+              <button type="submit" disabled={busy} className="btn btn-primary mt-4 w-full disabled:opacity-60">{busy ? t('verifying') : t('verifyAndClaim')}</button>
             </form>
           )
         )}
@@ -199,11 +203,11 @@ export function ClaimClient() {
             <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-ok/10">
               <svg viewBox="0 0 24 24" width="30" height="30" className="text-ok" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12l5 5L20 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
-            <h2 className="mt-4 font-display text-xl font-extrabold text-ink">Listing claimed</h2>
-            <p className="mt-1 text-ink-soft"><span className="font-semibold text-ink">{business.name}</span> is now linked to your account. You can edit it any time.</p>
+            <h2 className="mt-4 font-display text-xl font-extrabold text-ink">{t('claimedTitle')}</h2>
+            <p className="mt-1 text-ink-soft">{t('claimedBody', { name: business.name })}</p>
             <div className="mt-5 flex flex-wrap justify-center gap-2">
-              <Link href="/dashboard" className="btn btn-primary">Go to owner dashboard</Link>
-              <Link href={`/company/${business.id}/${business.slug}`} className="btn btn-secondary">View listing</Link>
+              <Link href="/dashboard" className="btn btn-primary">{t('goToDashboard')}</Link>
+              <Link href={`/company/${business.id}/${business.slug}`} className="btn btn-secondary">{t('viewListing')}</Link>
             </div>
           </div>
         )}

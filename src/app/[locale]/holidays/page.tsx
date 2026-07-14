@@ -1,22 +1,27 @@
 'use client';
 
 import { useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { HOLIDAYS, HOLIDAY_YEARS } from '@/lib/holidays';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
-const WEEKDAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const JS_DAY = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
 export default function HolidaysPage() {
   const [year, setYear] = useState(2026);
+  const locale = useLocale();
+  const t = useTranslations('holidays');
+  const tc = useTranslations('common');
+  const th = useTranslations('hours');
   const list = HOLIDAYS[year] ?? [];
 
   return (
     <div className="shell py-8">
-      <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Public Holidays' }]} />
+      <Breadcrumbs items={[{ href: '/', label: tc('home') }, { label: t('crumb') }]} />
       <header className="mb-6 mt-4 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">Public holidays in Japan</h1>
-          <p className="mt-2 text-ink-soft">National holidays (国民の祝日). Many businesses close or shorten hours on these days.</p>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">{t('title')}</h1>
+          <p className="mt-2 text-ink-soft">{t('subtitle')}</p>
         </div>
         <div className="flex items-end gap-0.5">
           {HOLIDAY_YEARS.map((y) => (
@@ -31,9 +36,9 @@ export default function HolidaysPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-rule bg-[#f4f3ee] text-left">
-              <th className="px-4 py-2.5 font-mono text-2xs uppercase tracking-wide text-meta">Date</th>
-              <th className="px-4 py-2.5 font-mono text-2xs uppercase tracking-wide text-meta">Day</th>
-              <th className="px-4 py-2.5 font-mono text-2xs uppercase tracking-wide text-meta">Holiday</th>
+              <th className="px-4 py-2.5 font-mono text-2xs uppercase tracking-wide text-meta">{t('date')}</th>
+              <th className="px-4 py-2.5 font-mono text-2xs uppercase tracking-wide text-meta">{t('day')}</th>
+              <th className="px-4 py-2.5 font-mono text-2xs uppercase tracking-wide text-meta">{t('holiday')}</th>
               <th className="px-4 py-2.5 font-mono text-2xs uppercase tracking-wide text-meta">日本語</th>
             </tr>
           </thead>
@@ -44,9 +49,9 @@ export default function HolidaysPage() {
               return (
                 <tr key={h.date} className="border-b border-rule last:border-0 hover:bg-[#faf9f5]">
                   <td className="tnum px-4 py-2.5 font-medium text-ink">
-                    {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {d.toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-US', { month: 'short', day: 'numeric' })}
                   </td>
-                  <td className={`px-4 py-2.5 ${weekend ? 'text-seal-ink' : 'text-ink-soft'}`}>{WEEKDAY[d.getDay()]}</td>
+                  <td className={`px-4 py-2.5 ${weekend ? 'text-seal-ink' : 'text-ink-soft'}`}>{th(JS_DAY[d.getDay()])}</td>
                   <td className="px-4 py-2.5 text-ink">{h.en}</td>
                   <td className="px-4 py-2.5 font-jp text-ink-soft">{h.ja}</td>
                 </tr>
@@ -55,7 +60,7 @@ export default function HolidaysPage() {
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-xs text-meta tnum">{list.length} national holidays in {year}. When a holiday falls on a Sunday, the following weekday becomes a substitute holiday (振替休日).</p>
+      <p className="mt-3 text-xs text-meta tnum">{t('footer', { count: list.length, year })}</p>
     </div>
   );
 }

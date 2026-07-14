@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/server/auth';
 import { db } from '@/lib/server/db';
+import { sendEmail, emailShell } from '@/lib/server/email';
 
 async function requireModerator() {
   const session = await getServerSession(authOptions);
@@ -44,7 +45,10 @@ export async function PATCH(req: Request) {
   if (!id || (action !== 'approve' && action !== 'reject'))
     return NextResponse.json({ error: 'Provide id and action (approve|reject).' }, { status: 400 });
 
-  const review = await db.review.findUnique({ where: { id } });
+  const review = await db.review.findUnique({
+    where: { id },
+    include: { business: { select: { name: true } }, author: { select: { email: true } } },
+  });
   if (!review) return NextResponse.json({ error: 'Review not found.' }, { status: 404 });
 
   const status = action === 'approve' ? 'APPROVED' : 'REJECTED';
@@ -63,6 +67,17 @@ export async function PATCH(req: Request) {
         reviewCount: agg._count,
       },
     });
+
+    if (review.author?.email) {
+      await sendEmail({
+        to: review.author.email,
+        subject: `Your review of ${review.business.name} is live`,
+        html: emailShell(
+          'Your review was published',
+          `<p>Thanks for reviewing <strong>${review.business.name}</strong> — it's live on NihonPages now.</p>`,
+        ),
+      });
+    }
   }
 
   await db.auditLog.create({

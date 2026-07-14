@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/server/auth';
 import { db } from '@/lib/server/db';
+import { sendEmail, emailShell } from '@/lib/server/email';
 
 async function requireModerator() {
   const session = await getServerSession(authOptions);
@@ -67,6 +68,18 @@ export async function PATCH(req: Request) {
   await db.auditLog.create({
     data: { actorId: session.user.id, action: `listing.${action}`, target: String(id) },
   });
+
+  if (action === 'approve' && business.email) {
+    await sendEmail({
+      to: business.email,
+      subject: `${business.name} is live on NihonPages`,
+      html: emailShell(
+        'Your listing is live',
+        `<p><strong>${business.name}</strong> just went live on NihonPages. Anyone searching your category or city can now find you.</p>
+         <p style="margin-top:16px;"><a href="https://nihonpages.example.jp/company/${business.id}/${business.slug}" style="color:#3B4A6B;">View your listing →</a></p>`,
+      ),
+    });
+  }
 
   return NextResponse.json({ ok: true });
 }

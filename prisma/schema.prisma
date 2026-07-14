@@ -97,6 +97,8 @@ model Business {
   hours           String
   plan            String             @default("NONE")
   planExpiresAt   DateTime?
+  stripeCustomerId     String?
+  stripeSubscriptionId String?       @unique
   verify          String             @default("NONE")
   status          String             @default("ACTIVE")
   rating          Float              @default(0)
@@ -116,6 +118,8 @@ model Business {
   removalRequests RemovalRequest[]
   adPlacements    AdPlacement[]
   claims          ClaimRequest[]
+  reports         Report[]
+  verificationCodes VerificationCode[]
 
   @@unique([id, slug])
   @@index([cityId])
@@ -252,6 +256,48 @@ model RemovalRequest {
   createdAt  DateTime         @default(now())
 }
 
+// A Get-Listed submission captured BEFORE payment. The wizard creates one of
+// these, then sends its id as the Stripe client_reference_id. The actual
+// Business row is only created once payment is confirmed — by the webhook
+// for real Stripe charges, or immediately in simulated (no Stripe key) mode.
+// ownerId is captured here (from the request's session) because the webhook
+// request comes from Stripe's servers and has no user session to read.
+model PendingListing {
+  id         String   @id @default(cuid())
+  ownerId    String?
+  plan       String
+  payload    String // JSON-serialized listing form data
+  status     String   @default("PENDING") // PENDING | COMPLETED | EXPIRED
+  businessId Int? // set once converted
+  stripeSessionId String?
+  createdAt  DateTime @default(now())
+}
+
+// "Report a problem" — structured issue reports on a listing (wrong info,
+// closed, spam, abusive review). Distinct from RemovalRequest: a report
+// doesn't ask to take the listing down, just flags something to check.
+model Report {
+  id         String   @id @default(cuid())
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  reason     String // "wrong-info" | "closed" | "spam" | "abuse" | "other"
+  details    String
+  email      String?
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+}
+
+// General support/contact form submissions (not tied to a listing).
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  topic     String
+  message   String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+}
+
 // Document/法人番号 claims that need a human check before ownership transfers.
 // Fast-path claims (email/phone code) skip this table entirely — they set
 // Business.ownerId directly once the code is confirmed.
@@ -309,4 +355,32 @@ model AuditLog {
   target    String
   meta      String?
   createdAt DateTime @default(now())
+}
+
+// Every transactional email the app has sent (or would have sent — see
+// src/lib/server/email.ts). With no RESEND_API_KEY configured, sends land
+// here instead of a real inbox, so the feature stays fully inspectable and
+// testable without a live email provider.
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  body      String
+  provider  String // "resend" | "console"
+  status    String   @default("SENT") // SENT | FAILED
+  createdAt DateTime @default(now())
+}
+
+// One-time codes for the claim flow's email verification path. Phone
+// verification stays simulated (no SMS provider integrated) — only email
+// codes are real, since real email sending now exists.
+model VerificationCode {
+  id         String   @id @default(cuid())
+  business   Business @relation(fields: [businessId], references: [id])
+  businessId Int
+  userId     String
+  code       String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime @default(now())
 }
