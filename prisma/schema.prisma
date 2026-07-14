@@ -1,12 +1,12 @@
 // NihonPages — canonical data model.
 //
-// Local dev runs on SQLite (file:./dev.db) so the backend works with zero
-// installs. For production Postgres: set DATABASE_URL to a postgres:// URL and
-// change `provider` to "postgresql" — the models below are written to be
-// compatible with both (SQLite has no native enums or Json, so those fields
-// are Strings with documented values / JSON-serialized content).
+// Runs on Postgres (works locally and on Vercel — set DATABASE_URL to a
+// postgres:// connection string, e.g. from Neon or Vercel Postgres). Several
+// fields stay String rather than native enum/Json for historical reasons
+// (this schema started on SQLite, which has neither) — they're compatible
+// with Postgres as plain text/JSON-serialized columns, documented below.
 //
-// String-constant fields (would be enums on Postgres):
+// String-constant fields (would be enums on a fresh Postgres-only schema):
 //   User.role            USER | OWNER | MODERATOR | ADMIN
 //   Business.plan        NONE | BASIC | PREMIUM | LIFETIME
 //   Business.verify      NONE | COMMUNITY | ADMIN
@@ -19,7 +19,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

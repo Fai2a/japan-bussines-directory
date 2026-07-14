@@ -126,15 +126,15 @@ export async function dbSearch(query: string, cityQuery?: string): Promise<Busin
       status: 'ACTIVE',
       AND: [
         city
-          ? { OR: [{ city: { name: { contains: city } } }, { city: { slug: { contains: city.toLowerCase() } } }, { address: { contains: city } }] }
+          ? { OR: [{ city: { name: { contains: city, mode: 'insensitive' } } }, { city: { slug: { contains: city.toLowerCase() } } }, { address: { contains: city, mode: 'insensitive' } }] }
           : {},
         q
           ? {
               OR: [
-                { name: { contains: q } },
+                { name: { contains: q, mode: 'insensitive' } },
                 { nameJa: { contains: q } },
-                { categories: { some: { category: { name: { contains: q } } } } },
-                { keywords: { some: { value: { contains: q } } } },
+                { categories: { some: { category: { name: { contains: q, mode: 'insensitive' } } } } },
+                { keywords: { some: { value: { contains: q, mode: 'insensitive' } } } },
               ],
             }
           : {},

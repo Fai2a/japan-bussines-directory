@@ -4,29 +4,44 @@ A production-quality local business directory for Japan: discover businesses by
 category, city, or keyword; read and write reviews; buy paid listings; and access
 the full company database as a B2B **Data Hub** product.
 
-**All six build phases are complete**, plus a real backend: Prisma over SQLite
-locally (documented one-line switch to Postgres), Auth.js credential accounts,
-a moderated review pipeline, Get-Listed submissions into an admin queue, and a
-Stripe checkout route (real test-mode sessions when a key is configured).
+**All six build phases are complete**, plus a real backend: Prisma over
+Postgres, Auth.js credential accounts, a moderated review pipeline, Get-Listed
+submissions with real Stripe webhooks (payment only creates a listing once
+Stripe confirms it — see "Payments" below), and transactional email for every
+flow that promises one (submission confirmations, approvals, claim codes).
 
 ---
 
 ## Quick start
 
+1. **Get a Postgres database.** The free tier of either works and takes under
+   a minute:
+   - [Neon](https://neon.tech) → New Project → copy the connection string.
+   - Vercel Postgres → your Vercel project → **Storage** tab → Create Database
+     → Postgres (this one also auto-fills `DATABASE_URL` in your deploy).
+2. Paste that connection string into `.env` as `DATABASE_URL` (replacing the
+   placeholder). If deploying to Vercel, set the same value in your Vercel
+   project's **Settings → Environment Variables**.
+3. Run:
+
 ```bash
 npm install
-npm run seed    # create + populate the SQLite database (prisma/dev.db)
+npm run seed    # creates the schema (via `prisma db push`) and seeds it
 npm run dev
 # open http://localhost:3000
 ```
 
 ```bash
-npm run build   # production build (~294 pages + API routes)
+npm run build   # runs `prisma db push` then the production build
 npm run start   # serve the production build
 ```
 
-`.env` ships with working local defaults (SQLite + a dev auth secret). Demo
-accounts seeded for each role — password `password123`:
+There's no local-only fallback anymore — both local dev and production point
+at the same Postgres database (or two different ones, if you'd rather keep
+dev/prod separate; just use a different `DATABASE_URL` in each place).
+
+`.env` ships with a placeholder `DATABASE_URL` and working defaults for
+everything else. Demo accounts seeded for each role — password `password123`:
 
 | Email | Role |
 | --- | --- |
@@ -53,32 +68,40 @@ accounts seeded for each role — password `password123`:
 | Contact, Remove-company, Legal (Terms / Privacy / Cookies) | ✅ |
 | Data Hub marketing page + pricing | ✅ |
 | 404 / 500 pages, sitemap, robots, per-page metadata + breadcrumb JSON-LD | ✅ |
-| Bilingual EN/日本語 scaffolding (data carries both; switcher persists choice) | ✅ (full i18n routing in Phase 6) |
+| Bilingual EN/日本語 with real `/ja` locale routing (next-intl) | ✅ on the customer-facing surface — see i18n note below |
 
 ### Built in subsequent phases
 
-- **Phase 2** — persistent favorites (bookmark on every card + account tab), map-view toggle with draw-area search, review writing wired to the moderation pipeline, suggest-edit flow, notification preferences.
-- **Phase 3** — full 5-step Get-Listed wizard (per-plan limits enforced client *and* server side, progress saved between steps), owner dashboard (analytics, listing editor, review replies, plan usage/billing), claim-listing verification (email / phone / 法人番号 document).
+- **Phase 2** — persistent favorites (bookmark on every card + account tab, synced server-side once signed in), map-view toggle with draw-area search, review writing wired to the moderation pipeline, suggest-edit flow, notification preferences.
+- **Phase 3** — full 5-step Get-Listed wizard (per-plan limits enforced client *and* server side, progress saved between steps), owner dashboard (analytics, listing editor, review replies, plan usage/billing), claim-listing verification (real email codes, simulated phone, 法人番号 document review).
 - **Phase 4** — Data Hub table app at `/saas/app`: dense sortable table, advanced filters, saved searches, CSV export with per-plan monthly quotas.
-- **Phase 5** — admin panel (revenue dashboard + listing/review/removal queues), Buzz blog (index + Article JSON-LD template).
-- **Phase 6** — PWA (manifest, production service worker, offline page), EN/日本語 switcher (full next-intl locale routing is the one remaining roadmap item).
+- **Phase 5** — admin panel (revenue dashboard + listing/review/removal/report queues), Buzz blog (index + Article JSON-LD template), a real "Report a problem" flow.
+- **Phase 6** — PWA (manifest, production service worker, offline page), `next-intl` locale routing (`/` = English, `/ja` = Japanese) with full translation coverage on every customer-facing page — home, browse, category/city, search, and the entire company profile. Admin, owner dashboard, Data Hub app, blog, and legal pages still route correctly under `/ja` but haven't had their copy translated yet.
 
 ### Backend (post-phase wiring)
 
-- **Database** — Prisma over SQLite for zero-install local dev; `npm run seed`
-  loads 220 businesses, 24 categories, 10 cities, ~380 reviews. To use Postgres:
-  set `DATABASE_URL` and flip `provider` in `prisma/schema.prisma`.
+- **Database** — Prisma over Postgres (see Quick Start above for provisioning
+  a free one). `npm run seed` loads 220 businesses, 24 categories, 10 cities,
+  ~380 reviews via `prisma db push` + a seed script.
 - **Auth** — Auth.js (NextAuth) credentials against the `User` table, bcrypt
   hashes, JWT sessions carrying the DB role; `/api/register` for signup. RBAC:
   admin APIs 403 for non-admins.
 - **Reviews** — `POST /api/reviews` (auth required, honeypot) → `PENDING` →
   admin approves via `PATCH /api/admin/reviews`, which recomputes the business
-  rating and writes an `AuditLog` row.
-- **Listings** — the wizard `POST`s to `/api/listings`; submissions are created
-  `IN_REVIEW` (limits re-enforced server-side) and hidden until approved.
-- **Payments** — `POST /api/checkout` creates a real Stripe **test-mode**
+  rating, emails the reviewer, and writes an `AuditLog` row.
+- **Listings & payments** — the wizard stashes the form as a `PendingListing`
+  draft, *then* pays. `POST /api/checkout` creates a real Stripe **test-mode**
   Checkout Session (one-time or yearly subscription) when `STRIPE_SECRET_KEY`
-  is set; otherwise it returns a simulated confirmation so the flow still works.
+  is set, with the draft id as `client_reference_id`. The listing is only ever
+  created by `/api/webhooks/stripe` on `checkout.session.completed` — never by
+  the client — so an abandoned payment never produces a listing. A lapsed
+  Premium subscription (`customer.subscription.deleted`) auto-suspends the
+  listing. Without a Stripe key, checkout converts the draft immediately so
+  the demo flow still works end to end.
+- **Email** — every flow that says "we'll email you" actually does, via
+  `src/lib/server/email.ts`. With `RESEND_API_KEY` set it sends for real;
+  without one, sends land in the `EmailLog` table instead of an inbox, so the
+  whole feature is testable with zero provider setup.
 
 ---
 
@@ -86,16 +109,20 @@ accounts seeded for each role — password `password123`:
 
 - **Next.js 14** (App Router) + **TypeScript**
 - **Tailwind CSS** with a real design-token layer (`tailwind.config.ts` + `globals.css`)
-- **Prisma** — SQLite locally, Postgres-ready (`prisma/schema.prisma`)
+- **Prisma** over **Postgres** (`prisma/schema.prisma`)
 - **Auth.js (NextAuth)** — credentials + JWT sessions with DB roles
-- **Stripe** — test-mode Checkout Sessions behind `/api/checkout`
-- Planned: Google OAuth, **S3** uploads, **Meilisearch**, **Resend/SES**, **next-intl** locale routing
+- **Stripe** — test-mode Checkout Sessions + webhooks behind `/api/checkout` and `/api/webhooks/stripe`
+- **next-intl** — locale-prefixed routing (`/`, `/ja`)
+- **Resend** — transactional email (falls back to an `EmailLog` DB table with no API key)
+- Planned: Google OAuth, **S3** uploads, **Meilisearch**
 
 ### Project structure
 
 ```
 src/
-  app/              # routes (App Router)
+  app/
+    [locale]/       # every route, locale-prefixed via next-intl ("/" = en, "/ja" = ja)
+    api/            # route handlers (auth, checkout, webhooks, admin, reports, contact...)
   components/
     site/           # header, footer, search, cookie banner, i18n switch
     ui/             # Stars, Badges, Monogram, BusinessCard, Pagination, Breadcrumbs
@@ -103,7 +130,10 @@ src/
     listing/        # filter bar
     browse/         # category browser
     company/        # gallery, hours, reviews, contact actions
-  lib/              # data layer + queries (mirrors the Prisma models)
+  lib/
+    server/         # Prisma-backed queries, email, createListingFromDraft, db.ts
+  i18n/             # next-intl request config + routing
+messages/           # en.json / ja.json translation catalogs
 prisma/schema.prisma
 scripts/seed.ts
 ```

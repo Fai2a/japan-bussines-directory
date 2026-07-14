@@ -7,7 +7,7 @@ export async function GET(req: Request) {
   if (q.length < 2) return NextResponse.json({ results: [] });
 
   const rows = await db.business.findMany({
-    where: { OR: [{ name: { contains: q } }, { nameJa: { contains: q } }] },
+    where: { OR: [{ name: { contains: q, mode: 'insensitive' } }, { nameJa: { contains: q } }] },
     take: 6,
     select: {
       id: true, slug: true, name: true, nameJa: true, address: true, verify: true, ownerId: true,
