@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/server/auth';
 import { db } from '@/lib/server/db';
+import { sendEmail, emailShell } from '@/lib/server/email';
 
 /**
  * POST /api/owner/replies — publish an owner reply to a review on the
@@ -22,7 +23,11 @@ export async function POST(req: Request) {
 
   const review = await db.review.findUnique({
     where: { id: body.reviewId },
-    include: { business: { select: { ownerId: true } }, ownerReply: true },
+    include: {
+      business: { select: { ownerId: true, name: true } },
+      ownerReply: true,
+      author: { select: { email: true, prefReplies: true } },
+    },
   });
   if (!review) return NextResponse.json({ error: 'Review not found.' }, { status: 404 });
   if (review.business.ownerId !== session.user.id)
@@ -31,5 +36,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'This review already has a reply.' }, { status: 409 });
 
   await db.ownerReply.create({ data: { reviewId: review.id, text } });
+
+  if (review.author?.email && review.author.prefReplies) {
+    await sendEmail({
+      to: review.author.email,
+      subject: `${review.business.name} replied to your review`,
+      html: emailShell(
+        'You got a reply',
+        `<p><strong>${review.business.name}</strong> replied to your review:</p><p style="padding:12px;background:#F4F3EE;border-radius:6px;">${text}</p>`,
+      ),
+    });
+  }
+
   return NextResponse.json({ ok: true });
 }

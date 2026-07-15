@@ -141,7 +141,13 @@
     "mapView": "地図"
   },
   "hours": {
-    "mon": "月曜日", "tue": "火曜日", "wed": "水曜日", "thu": "木曜日", "fri": "金曜日", "sat": "土曜日", "sun": "日曜日",
+    "mon": "月曜日",
+    "tue": "火曜日",
+    "wed": "水曜日",
+    "thu": "木曜日",
+    "fri": "金曜日",
+    "sat": "土曜日",
+    "sun": "日曜日",
     "today": "（本日）",
     "closed": "定休日",
     "closedToday": "本日定休日",
@@ -488,5 +494,302 @@
     "contacts": "連絡先データ",
     "exports": "エクスポート",
     "start": "{plan}を始める"
+  },
+  "legal": {
+    "lastUpdated": "最終更新日：{date}",
+    "templateNotice": "これは一般的なディレクトリ規約をまとめた製品テンプレートです。公開前に、対象地域の法律専門家に全文を確認してもらってください。",
+    "docs": {
+      "terms-of-use": {
+        "title": "利用規約",
+        "sections": {
+          "0": {
+            "h": "同意",
+            "p": "NihonPagesにアクセスすることで、本利用規約に同意したものとみなされます。同意いただけない場合は、本サービスをご利用いただけません。"
+          },
+          "1": {
+            "h": "掲載情報",
+            "p": "掲載情報は公開情報および事業者からの申請をもとに作成されています。正確性の維持に努めていますが、すべての情報が常に最新であることを保証するものではありません。修正のご報告はいつでも受け付けています。"
+          },
+          "2": {
+            "h": "禁止事項",
+            "p": "ディレクトリの一括スクレイピング、虚偽の掲載・レビューの投稿、または本サービスを利用した事業者・個人への嫌がらせは禁止されています。"
+          },
+          "3": {
+            "h": "レビュー",
+            "p": "レビューは実際の利用体験を反映したものである必要があります。投稿内容は審査を行い、ガイドラインに違反するコンテンツは削除します。"
+          }
+        }
+      },
+      "terms-of-service": {
+        "title": "有料サービス利用規約",
+        "sections": {
+          "0": {
+            "h": "有料掲載プラン",
+            "p": "ベーシックおよびライフタイムプランは買い切り、プレミアムプランは年額課金です。表示価格には該当する場合、現在実施中のプロモーション割引が含まれます。"
+          },
+          "1": {
+            "h": "返金について",
+            "p": "掲載情報は人の手で審査・公開されるため、返金は個別対応となります。未公開の掲載については購入から14日以内であれば返金対応いたします。"
+          },
+          "2": {
+            "h": "データハブのご契約",
+            "p": "データハブプランは月額課金で、いつでも解約可能です。解約後も、支払い済み期間の終了まではご利用いただけます。エクスポート枠は毎月リセットされます。"
+          },
+          "3": {
+            "h": "利用停止・解約",
+            "p": "本規約に違反したアカウントは利用を停止する場合があります。お客様はいつでもダッシュボードからアカウントを解約できます。"
+          }
+        }
+      },
+      "privacy": {
+        "title": "プライバシーポリシー",
+        "sections": {
+          "0": {
+            "h": "取得する情報",
+            "p": "お客様が入力するアカウント情報、管理する掲載情報、そして同意いただいた場合に限り、サイトのご利用状況に関する分析データを取得します。"
+          },
+          "1": {
+            "h": "利用目的",
+            "p": "ディレクトリの運営、決済処理、不正利用の防止、そして同意いただいた場合はサービス改善のために利用します。個人データを第三者に販売することはありません。"
+          },
+          "2": {
+            "h": "お客様の選択肢",
+            "p": "アカウント設定またはサポートへのお問い合わせにより、個人データの確認・訂正・削除、および分析への同意の撤回がいつでも可能です。"
+          },
+          "3": {
+            "h": "事業者データ",
+            "p": "掲載情報に表示される企業情報は事業者ディレクトリデータとして扱われます。事業者はご自身の掲載情報の請求（クレーム）、編集、削除依頼を行うことができます。"
+          }
+        }
+      },
+      "cookies": {
+        "title": "クッキーポリシー",
+        "sections": {
+          "0": {
+            "h": "必須クッキー",
+            "p": "サインインおよび基本機能に必要なクッキーです。常に有効で、無効にすることはできません。"
+          },
+          "1": {
+            "h": "任意の分析クッキー",
+            "p": "サイトの利用状況の把握に役立てます。クッキーバナーで同意いただかない限り無効のままです（デフォルトは拒否）。"
+          },
+          "2": {
+            "h": "クッキーの管理",
+            "p": "クッキーバナーまたはブラウザの設定からいつでも選択を変更できます。クッキーを削除すると設定はリセットされます。"
+          }
+        }
+      }
+    }
+  },
+  "buzz": {
+    "metaTitle": "Buzz — 記事とガイド",
+    "metaDescription": "掲載方法、役立つレビューの書き方、認証、データハブの使い方のガイド。日本のローカル検索についての視点も。",
+    "crumb": "Buzz",
+    "eyebrow": "NihonPagesブログ",
+    "intro": "事業者・利用者向けガイド、プロダクトノート、そして日本のローカル発見についてのちょっとした視点。",
+    "readMins": "読了時間 {count}分",
+    "allArticles": "← 記事一覧へ",
+    "getListedCta": "あなたのビジネスを掲載する",
+    "moreFromBuzz": "Buzzの他の記事"
+  },
+  "dashboard": {
+    "crumb": "オーナーダッシュボード",
+    "signInHeading": "オーナーサインイン",
+    "signInIntro": "掲載情報、レビュー、分析を管理できます。",
+    "tabs": {
+      "overview": "概要",
+      "listing": "掲載情報を編集",
+      "media": "写真・商品・求人",
+      "reviews": "レビュー",
+      "plan": "プランと請求"
+    },
+    "noListingTitle": "まだ掲載情報が連携されていません",
+    "noListingBody": "このアカウントはまだ事業者情報に連携されていません。",
+    "loadError": "掲載情報を読み込めませんでした。",
+    "createListing": "新しい掲載を作成",
+    "claimListing": "既存の掲載を請求（クレーム）する",
+    "viewPublicPage": "公開ページを見る",
+    "planSuffix": "プラン",
+    "inReviewNotice": "掲載情報は現在管理者の審査待ちです — まだ検索結果には表示されません。審査中も編集は可能です。",
+    "overview": {
+      "cardViews": "プロフィール閲覧数",
+      "cardImpressions": "検索表示回数",
+      "cardClicks": "ウェブサイトクリック数",
+      "cardCalls": "電話タップ数",
+      "vsLastWeek": "前週比",
+      "illustrativeNotice": "以下のトラフィックグラフはイメージ用のサンプルです — 分析トラッキングはまだ実装されていません。問い合わせ一覧は実データです。",
+      "chartTitle": "プロフィール閲覧数・過去8週間",
+      "updated": "更新日：{date}",
+      "recentLeads": "最近の問い合わせ",
+      "leadsIntro": "公開ページからの見積もり依頼はこちらに届きます。",
+      "noLeads": "まだ問い合わせはありません。"
+    },
+    "listing": {
+      "description": "説明文",
+      "fieldPhone": "電話番号",
+      "fieldWebsite": "ウェブサイト",
+      "fieldEmail": "メールアドレス",
+      "fieldAddress": "住所",
+      "fieldEmployees": "従業員数",
+      "saveChanges": "変更を保存",
+      "saving": "保存中…",
+      "saved": "✓ 保存しました",
+      "saveError": "変更を保存できませんでした。"
+    },
+    "media": {
+      "usagePhotos": "写真",
+      "usageProducts": "商品",
+      "usageJobs": "求人",
+      "uploadDisabledTitle": "写真のアップロードにはS3の設定が必要です（本ビルドでは未実装）",
+      "uploadNotice": "本番環境ではS3への署名付きURLアップロードを使用します — 本ビルドでは未実装です。"
+    },
+    "reviews": {
+      "pendingModeration": "審査待ち",
+      "yourResponse": "あなたの返信",
+      "replyPlaceholder": "公開返信を書く…",
+      "reply": "返信",
+      "posting": "投稿中…",
+      "noReviews": "まだレビューはありません。",
+      "replyError": "返信を投稿できませんでした。"
+    },
+    "plan": {
+      "usageHeading": "プラン利用状況",
+      "labelCategories": "カテゴリ枠",
+      "labelKeywords": "キーワード",
+      "labelPhotos": "写真",
+      "labelProducts": "商品",
+      "labelJobs": "求人",
+      "currentPlan": "現在のプラン",
+      "upgrade": "ライフタイムにアップグレード",
+      "manageBilling": "請求管理",
+      "manageBillingDisabledTitle": "Stripeカスタマーポータルは本ビルドでは未実装です",
+      "nextInvoice": "請求はStripe（テストモード）経由で処理されます。次回請求予定額：{amount}（概算）。"
+    }
+  },
+  "admin": {
+    "crumb": "管理",
+    "title": "モデレーション・運用管理",
+    "adminsOnly": "管理者専用",
+    "signedInAs": "現在<strong>{role}</strong>としてサインインしています。続けるには管理者アカウントでサインインしてください。",
+    "switchAccount": "アカウントを切り替える",
+    "signInHeading": "管理者サインイン",
+    "signInIntro": "掲載情報、レビュー、削除リクエストを審査します。",
+    "tabs": {
+      "dashboard": "ダッシュボード",
+      "listings": "掲載",
+      "reviews": "レビュー",
+      "removals": "削除申請",
+      "reports": "通報"
+    },
+    "status": {
+      "approved": "承認済み",
+      "rejected": "却下"
+    },
+    "approve": "承認",
+    "reject": "却下",
+    "queueClear": "キューは空です — 保留中の項目はありません。",
+    "loadError": "キューの読み込みに失敗しました。",
+    "dashboard": {
+      "companies": "事業者数",
+      "companiesDelta": "今週 +312件",
+      "pendingListings": "審査待ちの掲載",
+      "pendingListingsDelta": "24時間超過 4件",
+      "pendingReviews": "審査待ちのレビュー",
+      "pendingReviewsDelta": "要確認 12件",
+      "mrr": "月間経常収益（MRR）",
+      "mrrDelta": "前月比 +6.4%",
+      "revenueChart": "収益・過去12ヶ月（百万円）",
+      "revenueMix": "収益内訳",
+      "streamListingPlans": "掲載プラン",
+      "streamDataHub": "データハブ",
+      "streamFeaturedAds": "広告掲載"
+    },
+    "listings": {
+      "pendingCount": "審査待ちの掲載 {count}件 · 承認で公開、却下で保留にします。",
+      "uncategorized": "未分類",
+      "submitted": "{date}に申請",
+      "byOwner": "申請者：{owner}",
+      "publish": "公開"
+    },
+    "reviews": {
+      "pendingCount": "審査キュー内のレビュー {count}件 · 公開前に人による確認を行います。承認すると事業者の評価がすぐに更新されます。",
+      "on": "投稿先：",
+      "remove": "削除"
+    },
+    "removals": {
+      "pendingCount": "削除リクエスト {count}件 · 削除前に申請者を確認してください。",
+      "reasonLine": "理由：{reason} · 申請者：{email}",
+      "remove": "削除する",
+      "decline": "却下する"
+    },
+    "reports": {
+      "pendingCount": "審査待ちの通報 {count}件。",
+      "reasonWrongInfo": "情報が誤っている",
+      "reasonClosed": "閉業済み",
+      "reasonSpam": "スパム・重複",
+      "reasonAbuse": "不適切なレビュー",
+      "reasonOther": "その他",
+      "fromEmail": "通報者：{email}",
+      "resolve": "対応済みにする",
+      "dismiss": "却下する"
+    }
+  },
+  "dataHubApp": {
+    "crumbDataHub": "データハブ",
+    "crumbApp": "アプリ",
+    "noAds": "広告なし",
+    "plan": "プラン",
+    "quotaLine": "エクスポート枠：残り{remaining} / {quota}行",
+    "filters": "フィルター",
+    "searchPlaceholder": "会社名または住所で検索",
+    "allCategories": "すべてのカテゴリ",
+    "allPrefectures": "すべての都道府県",
+    "hasEmail": "メールアドレスあり",
+    "hasPhone": "電話番号あり",
+    "employees": "従業員数",
+    "established": "設立年",
+    "min": "最小",
+    "max": "最大",
+    "from": "開始",
+    "to": "終了",
+    "clearAll": "すべてクリア",
+    "savedSearches": "保存した検索",
+    "saveCurrent": "現在の条件を保存",
+    "savedSearchesEmpty": "フィルター条件を保存すると後で再利用できます。",
+    "deleteSavedSearch": "保存した検索を削除",
+    "nameSearchPrompt": "この検索に名前を付けてください：",
+    "companiesMatch": "該当する事業者 {count}件",
+    "saveSearch": "検索を保存",
+    "exportCsv": "CSVエクスポート",
+    "colCompany": "会社名",
+    "colCity": "都市",
+    "colCategory": "カテゴリ",
+    "colEstablished": "設立",
+    "colEmployees": "従業員",
+    "colPhone": "電話",
+    "colEmail": "メール",
+    "showingFirst": "{count}件中、最初の200件を表示中 — 全件はCSVエクスポートでご確認ください。",
+    "quotaExceeded": "エクスポートが残りの枠（{remaining}行）を超えています。フィルターを絞るかプランをアップグレードしてください。",
+    "exportedRows": "{count}行をエクスポートしました。"
+  },
+  "signIn": {
+    "defaultHeading": "NihonPagesにサインイン",
+    "defaultIntro": "お気に入りの保存、レビューの投稿、掲載情報の管理ができます。",
+    "signIn": "サインイン",
+    "createAccount": "アカウントを作成",
+    "name": "名前",
+    "namePlaceholder": "お名前",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "passwordPlaceholder": "パスワード",
+    "passwordMinPlaceholder": "8文字以上",
+    "imOwner": "事業者です（掲載情報を管理します）",
+    "working": "処理中…",
+    "tryDemoAccount": "デモアカウントを試す",
+    "demoUser": "デモユーザー",
+    "demoOwner": "デモオーナー",
+    "demoAdmin": "デモ管理者",
+    "demoAccountsNote": "シード済みアカウント（パスワード：password123）— 各ロールをすぐに試せます。",
+    "demoMissing": "デモアカウントが見つかりません — 先に `npm run seed` を実行してください。"
   }
 }

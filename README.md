@@ -76,7 +76,7 @@ everything else. Demo accounts seeded for each role — password `password123`:
 - **Phase 3** — full 5-step Get-Listed wizard (per-plan limits enforced client *and* server side, progress saved between steps), owner dashboard (analytics, listing editor, review replies, plan usage/billing), claim-listing verification (real email codes, simulated phone, 法人番号 document review).
 - **Phase 4** — Data Hub table app at `/saas/app`: dense sortable table, advanced filters, saved searches, CSV export with per-plan monthly quotas.
 - **Phase 5** — admin panel (revenue dashboard + listing/review/removal/report queues), Buzz blog (index + Article JSON-LD template), a real "Report a problem" flow.
-- **Phase 6** — PWA (manifest, production service worker, offline page), `next-intl` locale routing (`/` = English, `/ja` = Japanese) with full translation coverage on every customer-facing page — home, browse, category/city, search, and the entire company profile. Admin, owner dashboard, Data Hub app, blog, and legal pages still route correctly under `/ja` but haven't had their copy translated yet.
+- **Phase 6** — PWA (manifest, production service worker, offline page), `next-intl` locale routing (`/` = English, `/ja` = Japanese) with full UI translation coverage across the entire app — home, browse, category/city, search, company profile, account, owner dashboard, admin panel, Data Hub app, blog, and legal pages. Two deliberate exceptions: Buzz article *bodies* (the long-form content itself, not the surrounding UI) and Data Hub CSV export column headers stay English by design — those are content/data-schema decisions, not missed UI strings.
 
 ### Backend (post-phase wiring)
 
@@ -102,6 +102,14 @@ everything else. Demo accounts seeded for each role — password `password123`:
   `src/lib/server/email.ts`. With `RESEND_API_KEY` set it sends for real;
   without one, sends land in the `EmailLog` table instead of an inbox, so the
   whole feature is testable with zero provider setup.
+- **Notifications** — the account page's toggles (`/api/account/preferences`)
+  are real per-user server state, not `localStorage`. Turning on "review
+  replies" or "Q&A answers" makes `/api/owner/replies` and `/api/answers`
+  email you the moment it happens. The "weekly digest" toggle drives
+  `src/lib/server/digest.ts`, run weekly by Vercel Cron (`vercel.json`) via
+  `/api/cron/digest`, which emails each opted-in user the new businesses in
+  their favorited cities/categories from the last 7 days. Protect that route
+  in production by setting `CRON_SECRET` (Vercel sends it automatically).
 
 ---
 

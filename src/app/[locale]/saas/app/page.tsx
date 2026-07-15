@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { BUSINESSES } from '@/lib/businesses';
@@ -33,6 +34,8 @@ function quotaFor(planId: string) {
 }
 
 export default function DataHubApp() {
+  const t = useTranslations('dataHubApp');
+  const tc = useTranslations('common');
   const [planId, setPlanId] = useState('pro');
   const [filters, setFilters] = useState<Filters>(EMPTY);
   const [sort, setSort] = useState<{ col: SortCol; dir: 1 | -1 }>({ col: 'name', dir: 1 });
@@ -79,7 +82,7 @@ export default function DataHubApp() {
 
   function exportCsv() {
     if (rows.length > remaining) {
-      setToast(`Export exceeds your remaining quota (${remaining.toLocaleString()} rows). Narrow the filters or upgrade.`);
+      setToast(t('quotaExceeded', { remaining: remaining.toLocaleString() }));
       setTimeout(() => setToast(''), 4000);
       return;
     }
@@ -95,12 +98,12 @@ export default function DataHubApp() {
     const used = exported + rows.length;
     setExported(used);
     try { localStorage.setItem(QUOTA_KEY, String(used)); } catch {}
-    setToast(`Exported ${rows.length.toLocaleString()} rows.`);
+    setToast(t('exportedRows', { count: rows.length.toLocaleString() }));
     setTimeout(() => setToast(''), 3000);
   }
 
   function saveSearch() {
-    const name = prompt('Name this saved search:');
+    const name = prompt(t('nameSearchPrompt'));
     if (!name) return;
     const next = [...saved, { name, filters }];
     setSaved(next);
@@ -114,21 +117,29 @@ export default function DataHubApp() {
 
   const set = <K extends keyof Filters>(k: K, v: Filters[K]) => setFilters((f) => ({ ...f, [k]: v }));
 
+  const COLUMNS: [SortCol, string][] = [
+    ['name', t('colCompany')],
+    ['city', t('colCity')],
+    ['category', t('colCategory')],
+    ['established', t('colEstablished')],
+    ['employees', t('colEmployees')],
+  ];
+
   return (
     <div className="shell py-6">
-      <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/saas', label: 'Data Hub' }, { label: 'App' }]} />
+      <Breadcrumbs items={[{ href: '/', label: tc('home') }, { href: '/saas', label: t('crumbDataHub') }, { label: t('crumbApp') }]} />
 
       {/* Subscription bar */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-rule bg-panel p-3">
         <div className="flex items-center gap-2 text-sm">
-          <span className="rounded-sm bg-ink px-1.5 py-0.5 text-2xs font-bold uppercase text-paper">No ads</span>
-          <span className="text-meta">Plan</span>
+          <span className="rounded-sm bg-ink px-1.5 py-0.5 text-2xs font-bold uppercase text-paper">{t('noAds')}</span>
+          <span className="text-meta">{t('plan')}</span>
           <select value={planId} onChange={(e) => setPlan(e.target.value)} className="rounded-sm border border-rule bg-panel px-2 py-1 text-sm font-medium">
             {DATAHUB_PLANS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="tnum text-meta">Export quota: <span className="font-semibold text-ink">{remaining.toLocaleString()}</span> / {quota.toLocaleString()} rows left</span>
+          <span className="tnum text-meta">{t('quotaLine', { remaining: remaining.toLocaleString(), quota: quota.toLocaleString() })}</span>
           <div className="h-1.5 w-28 overflow-hidden rounded-full bg-[#ecebe4]"><div className="h-full rounded-full bg-ok" style={{ width: `${(remaining / quota) * 100}%` }} /></div>
         </div>
       </div>
@@ -137,42 +148,42 @@ export default function DataHubApp() {
         {/* Filters */}
         <aside className="space-y-3">
           <div className="panel p-3">
-            <p className="eyebrow mb-2">Filters</p>
-            <input value={filters.q} onChange={(e) => set('q', e.target.value)} placeholder="Search name or address" className="mb-2 w-full rounded-sm border border-rule bg-panel px-2 py-1.5 text-sm focus:outline-none focus-visible:border-indigo" />
+            <p className="eyebrow mb-2">{t('filters')}</p>
+            <input value={filters.q} onChange={(e) => set('q', e.target.value)} placeholder={t('searchPlaceholder')} className="mb-2 w-full rounded-sm border border-rule bg-panel px-2 py-1.5 text-sm focus:outline-none focus-visible:border-indigo" />
             <select value={filters.category} onChange={(e) => set('category', e.target.value)} className="mb-2 w-full rounded-sm border border-rule bg-panel px-2 py-1.5 text-sm">
-              <option value="">All categories</option>
+              <option value="">{t('allCategories')}</option>
               {CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
             </select>
             <select value={filters.prefecture} onChange={(e) => set('prefecture', e.target.value)} className="mb-2 w-full rounded-sm border border-rule bg-panel px-2 py-1.5 text-sm">
-              <option value="">All prefectures</option>
+              <option value="">{t('allPrefectures')}</option>
               {PREFECTURES.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}
             </select>
-            <label className="mb-1 flex items-center gap-2 text-sm text-ink-soft"><input type="checkbox" checked={filters.hasEmail} onChange={(e) => set('hasEmail', e.target.checked)} /> Has email</label>
-            <label className="mb-2 flex items-center gap-2 text-sm text-ink-soft"><input type="checkbox" checked={filters.hasPhone} onChange={(e) => set('hasPhone', e.target.checked)} /> Has phone</label>
-            <p className="mb-1 mt-2 text-xs font-medium text-meta">Employees</p>
+            <label className="mb-1 flex items-center gap-2 text-sm text-ink-soft"><input type="checkbox" checked={filters.hasEmail} onChange={(e) => set('hasEmail', e.target.checked)} /> {t('hasEmail')}</label>
+            <label className="mb-2 flex items-center gap-2 text-sm text-ink-soft"><input type="checkbox" checked={filters.hasPhone} onChange={(e) => set('hasPhone', e.target.checked)} /> {t('hasPhone')}</label>
+            <p className="mb-1 mt-2 text-xs font-medium text-meta">{t('employees')}</p>
             <div className="mb-2 flex gap-2">
-              <input value={filters.empMin} onChange={(e) => set('empMin', e.target.value.replace(/\D/g, ''))} placeholder="min" className="tnum w-full rounded-sm border border-rule bg-panel px-2 py-1 text-sm" />
-              <input value={filters.empMax} onChange={(e) => set('empMax', e.target.value.replace(/\D/g, ''))} placeholder="max" className="tnum w-full rounded-sm border border-rule bg-panel px-2 py-1 text-sm" />
+              <input value={filters.empMin} onChange={(e) => set('empMin', e.target.value.replace(/\D/g, ''))} placeholder={t('min')} className="tnum w-full rounded-sm border border-rule bg-panel px-2 py-1 text-sm" />
+              <input value={filters.empMax} onChange={(e) => set('empMax', e.target.value.replace(/\D/g, ''))} placeholder={t('max')} className="tnum w-full rounded-sm border border-rule bg-panel px-2 py-1 text-sm" />
             </div>
-            <p className="mb-1 text-xs font-medium text-meta">Established</p>
+            <p className="mb-1 text-xs font-medium text-meta">{t('established')}</p>
             <div className="mb-2 flex gap-2">
-              <input value={filters.yearMin} onChange={(e) => set('yearMin', e.target.value.replace(/\D/g, ''))} placeholder="from" className="tnum w-full rounded-sm border border-rule bg-panel px-2 py-1 text-sm" />
-              <input value={filters.yearMax} onChange={(e) => set('yearMax', e.target.value.replace(/\D/g, ''))} placeholder="to" className="tnum w-full rounded-sm border border-rule bg-panel px-2 py-1 text-sm" />
+              <input value={filters.yearMin} onChange={(e) => set('yearMin', e.target.value.replace(/\D/g, ''))} placeholder={t('from')} className="tnum w-full rounded-sm border border-rule bg-panel px-2 py-1 text-sm" />
+              <input value={filters.yearMax} onChange={(e) => set('yearMax', e.target.value.replace(/\D/g, ''))} placeholder={t('to')} className="tnum w-full rounded-sm border border-rule bg-panel px-2 py-1 text-sm" />
             </div>
-            <button onClick={() => setFilters(EMPTY)} className="w-full text-xs font-medium text-meta hover:text-ink">Clear all</button>
+            <button onClick={() => setFilters(EMPTY)} className="w-full text-xs font-medium text-meta hover:text-ink">{t('clearAll')}</button>
           </div>
 
           <div className="panel p-3">
             <div className="mb-2 flex items-center justify-between">
-              <p className="eyebrow">Saved searches</p>
-              <button onClick={saveSearch} className="text-xs font-semibold text-indigo hover:underline">Save current</button>
+              <p className="eyebrow">{t('savedSearches')}</p>
+              <button onClick={saveSearch} className="text-xs font-semibold text-indigo hover:underline">{t('saveCurrent')}</button>
             </div>
-            {saved.length === 0 ? <p className="text-xs text-meta">Save a filter set to reuse it later.</p> : (
+            {saved.length === 0 ? <p className="text-xs text-meta">{t('savedSearchesEmpty')}</p> : (
               <ul className="space-y-1">
                 {saved.map((s, i) => (
                   <li key={i} className="flex items-center justify-between gap-2">
                     <button onClick={() => setFilters(s.filters)} className="truncate text-sm text-ink-soft hover:text-indigo">{s.name}</button>
-                    <button onClick={() => removeSaved(i)} className="text-meta hover:text-seal" aria-label="Delete saved search">✕</button>
+                    <button onClick={() => removeSaved(i)} className="text-meta hover:text-seal" aria-label={t('deleteSavedSearch')}>✕</button>
                   </li>
                 ))}
               </ul>
@@ -183,10 +194,10 @@ export default function DataHubApp() {
         {/* Table */}
         <div className="min-w-0">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="tnum text-sm text-meta"><span className="font-semibold text-ink">{rows.length.toLocaleString()}</span> companies match</p>
+            <p className="tnum text-sm text-meta">{t('companiesMatch', { count: rows.length.toLocaleString() })}</p>
             <div className="flex gap-2">
-              <button onClick={saveSearch} className="btn btn-secondary py-1.5 text-sm">Save search</button>
-              <button onClick={exportCsv} className="btn btn-primary py-1.5 text-sm">Export CSV</button>
+              <button onClick={saveSearch} className="btn btn-secondary py-1.5 text-sm">{t('saveSearch')}</button>
+              <button onClick={exportCsv} className="btn btn-primary py-1.5 text-sm">{t('exportCsv')}</button>
             </div>
           </div>
 
@@ -194,15 +205,15 @@ export default function DataHubApp() {
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-rule bg-[#f4f3ee] text-left">
-                  {([['name', 'Company'], ['city', 'City'], ['category', 'Category'], ['established', 'Est.'], ['employees', 'Emp.']] as [SortCol, string][]).map(([col, label]) => (
+                  {COLUMNS.map(([col, label]) => (
                     <th key={col} className="whitespace-nowrap px-3 py-2 font-mono text-2xs font-semibold uppercase tracking-wide text-meta">
                       <button onClick={() => toggleSort(col)} className="inline-flex items-center gap-1 hover:text-ink">
                         {label}{sort.col === col && <span>{sort.dir === 1 ? '▲' : '▼'}</span>}
                       </button>
                     </th>
                   ))}
-                  <th className="whitespace-nowrap px-3 py-2 font-mono text-2xs font-semibold uppercase tracking-wide text-meta">Phone</th>
-                  <th className="whitespace-nowrap px-3 py-2 font-mono text-2xs font-semibold uppercase tracking-wide text-meta">Email</th>
+                  <th className="whitespace-nowrap px-3 py-2 font-mono text-2xs font-semibold uppercase tracking-wide text-meta">{t('colPhone')}</th>
+                  <th className="whitespace-nowrap px-3 py-2 font-mono text-2xs font-semibold uppercase tracking-wide text-meta">{t('colEmail')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -222,7 +233,7 @@ export default function DataHubApp() {
               </tbody>
             </table>
           </div>
-          {rows.length > 200 && <p className="mt-2 text-xs text-meta">Showing first 200 of {rows.length.toLocaleString()} — export to CSV for the full set.</p>}
+          {rows.length > 200 && <p className="mt-2 text-xs text-meta">{t('showingFirst', { count: rows.length.toLocaleString() })}</p>}
         </div>
       </div>
 

@@ -32,6 +32,11 @@ model User {
   emailVerified DateTime?
   image         String?
   locale        String        @default("en")
+  prefDigest    Boolean       @default(true)
+  prefReplies   Boolean       @default(true)
+  prefAnswers   Boolean       @default(true)
+  prefProduct   Boolean       @default(false)
+  lastDigestAt  DateTime?
   createdAt     DateTime      @default(now())
   businesses    Business[]    @relation("OwnerBusinesses")
   reviews       Review[]

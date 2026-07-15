@@ -141,7 +141,13 @@
     "mapView": "Map"
   },
   "hours": {
-    "mon": "Monday", "tue": "Tuesday", "wed": "Wednesday", "thu": "Thursday", "fri": "Friday", "sat": "Saturday", "sun": "Sunday",
+    "mon": "Monday",
+    "tue": "Tuesday",
+    "wed": "Wednesday",
+    "thu": "Thursday",
+    "fri": "Friday",
+    "sat": "Saturday",
+    "sun": "Sunday",
     "today": "(today)",
     "closed": "Closed",
     "closedToday": "Closed today",
@@ -488,5 +494,302 @@
     "contacts": "Contacts",
     "exports": "Exports",
     "start": "Start {plan}"
+  },
+  "legal": {
+    "lastUpdated": "Last updated {date}",
+    "templateNotice": "This is a product template summarising typical directory terms. Before launch, have counsel review the full legal text for your jurisdiction.",
+    "docs": {
+      "terms-of-use": {
+        "title": "Terms of Use",
+        "sections": {
+          "0": {
+            "h": "Acceptance",
+            "p": "By accessing NihonPages you agree to these Terms of Use. If you do not agree, please do not use the service."
+          },
+          "1": {
+            "h": "Directory content",
+            "p": "Listings are compiled from public sources and owner submissions. We strive for accuracy but do not guarantee that every detail is current. Report corrections at any time."
+          },
+          "2": {
+            "h": "Acceptable use",
+            "p": "You may not scrape the directory in bulk, submit false listings or reviews, or use the service to harass any business or person."
+          },
+          "3": {
+            "h": "Reviews",
+            "p": "Reviews must reflect genuine experiences. We moderate submissions and remove content that violates our guidelines."
+          }
+        }
+      },
+      "terms-of-service": {
+        "title": "Terms of Service",
+        "sections": {
+          "0": {
+            "h": "Paid listings",
+            "p": "Basic and Lifetime plans are one-time purchases; Premium is billed annually. Prices shown include the current promotion where applicable."
+          },
+          "1": {
+            "h": "Refunds",
+            "p": "Because listings are reviewed and published by a person, refunds are handled case-by-case within 14 days of purchase for listings not yet published."
+          },
+          "2": {
+            "h": "Data Hub subscriptions",
+            "p": "Data Hub plans are billed monthly and may be cancelled at any time; access continues to the end of the paid period. Export quotas reset monthly."
+          },
+          "3": {
+            "h": "Termination",
+            "p": "We may suspend accounts that violate these terms. You may close your account at any time from your dashboard."
+          }
+        }
+      },
+      "privacy": {
+        "title": "Privacy Policy",
+        "sections": {
+          "0": {
+            "h": "What we collect",
+            "p": "Account details you provide, listings you manage, and — only with your consent — analytics about how you use the site."
+          },
+          "1": {
+            "h": "How we use it",
+            "p": "To operate the directory, process payments, prevent abuse, and (if you opt in) improve the product. We do not sell personal data."
+          },
+          "2": {
+            "h": "Your choices",
+            "p": "You can access, correct, or delete your personal data, and withdraw analytics consent, from your account settings or by contacting support."
+          },
+          "3": {
+            "h": "Business data",
+            "p": "Company information shown in listings is treated as business directory data. Owners can claim, edit, or request removal of their listing."
+          }
+        }
+      },
+      "cookies": {
+        "title": "Cookies Policy",
+        "sections": {
+          "0": {
+            "h": "Essential cookies",
+            "p": "Required for sign-in and core functionality. These are always on and cannot be disabled."
+          },
+          "1": {
+            "h": "Optional analytics",
+            "p": "Help us understand usage. These stay off unless you accept them in the cookie banner — the default is to decline."
+          },
+          "2": {
+            "h": "Managing cookies",
+            "p": "You can change your choice at any time via the cookie banner or your browser settings. Clearing cookies resets your preference."
+          }
+        }
+      }
+    }
+  },
+  "buzz": {
+    "metaTitle": "Buzz — articles & guides",
+    "metaDescription": "Guides on getting listed, writing useful reviews, verification, and using the Data Hub — plus perspective on local discovery in Japan.",
+    "crumb": "Buzz",
+    "eyebrow": "The NihonPages blog",
+    "intro": "Guides for owners and visitors, product notes, and the occasional opinion about local discovery in Japan.",
+    "readMins": "{count} min read",
+    "allArticles": "← All articles",
+    "getListedCta": "Get your business listed",
+    "moreFromBuzz": "More from Buzz"
+  },
+  "dashboard": {
+    "crumb": "Owner dashboard",
+    "signInHeading": "Owner sign-in",
+    "signInIntro": "Manage your listing, reviews and analytics.",
+    "tabs": {
+      "overview": "Overview",
+      "listing": "Edit listing",
+      "media": "Photos, products & jobs",
+      "reviews": "Reviews",
+      "plan": "Plan & billing"
+    },
+    "noListingTitle": "No listing linked yet",
+    "noListingBody": "This account isn’t connected to a business listing.",
+    "loadError": "Could not load your listing.",
+    "createListing": "Create a new listing",
+    "claimListing": "Claim an existing listing",
+    "viewPublicPage": "View public page",
+    "planSuffix": "plan",
+    "inReviewNotice": "Your listing is awaiting admin review — it isn’t visible in search yet. You can keep editing while you wait.",
+    "overview": {
+      "cardViews": "Profile views",
+      "cardImpressions": "Search impressions",
+      "cardClicks": "Website clicks",
+      "cardCalls": "Click-to-call",
+      "vsLastWeek": "vs last week",
+      "illustrativeNotice": "Traffic charts below are illustrative — full analytics tracking isn’t wired up yet. The lead inbox is real.",
+      "chartTitle": "Profile views · last 8 weeks",
+      "updated": "Updated {date}",
+      "recentLeads": "Recent leads",
+      "leadsIntro": "Quote requests from your public listing land here.",
+      "noLeads": "No leads yet."
+    },
+    "listing": {
+      "description": "Description",
+      "fieldPhone": "Phone",
+      "fieldWebsite": "Website",
+      "fieldEmail": "Email",
+      "fieldAddress": "Address",
+      "fieldEmployees": "Employees",
+      "saveChanges": "Save changes",
+      "saving": "Saving…",
+      "saved": "✓ Saved",
+      "saveError": "Could not save changes."
+    },
+    "media": {
+      "usagePhotos": "Photos",
+      "usageProducts": "Products",
+      "usageJobs": "Job offers",
+      "uploadDisabledTitle": "Photo uploads need S3 configured (not wired in this build)",
+      "uploadNotice": "Uploads use secure signed URLs in production (S3) — not yet wired in this build."
+    },
+    "reviews": {
+      "pendingModeration": "Pending moderation",
+      "yourResponse": "Your response",
+      "replyPlaceholder": "Write a public reply…",
+      "reply": "Reply",
+      "posting": "Posting…",
+      "noReviews": "No reviews yet.",
+      "replyError": "Could not post the reply."
+    },
+    "plan": {
+      "usageHeading": "Plan usage",
+      "labelCategories": "Category slots",
+      "labelKeywords": "Keywords",
+      "labelPhotos": "Photos",
+      "labelProducts": "Products",
+      "labelJobs": "Job offers",
+      "currentPlan": "Current plan",
+      "upgrade": "Upgrade to Lifetime",
+      "manageBilling": "Manage billing",
+      "manageBillingDisabledTitle": "Stripe customer portal isn’t wired in this build",
+      "nextInvoice": "Billing runs through Stripe (test mode). Next invoice: {amount} (approx)."
+    }
+  },
+  "admin": {
+    "crumb": "Admin",
+    "title": "Moderation & operations",
+    "adminsOnly": "Admins only",
+    "signedInAs": "You’re signed in as <strong>{role}</strong>. Sign in with an admin session to continue.",
+    "switchAccount": "Switch account",
+    "signInHeading": "Admin sign-in",
+    "signInIntro": "Moderate listings, reviews and removal requests.",
+    "tabs": {
+      "dashboard": "Dashboard",
+      "listings": "Listings",
+      "reviews": "Reviews",
+      "removals": "Removals",
+      "reports": "Reports"
+    },
+    "status": {
+      "approved": "approved",
+      "rejected": "rejected"
+    },
+    "approve": "Approve",
+    "reject": "Reject",
+    "queueClear": "Queue is clear — nothing pending.",
+    "loadError": "Failed to load queue.",
+    "dashboard": {
+      "companies": "Companies",
+      "companiesDelta": "+312 this week",
+      "pendingListings": "Pending listings",
+      "pendingListingsDelta": "4 over 24h",
+      "pendingReviews": "Pending reviews",
+      "pendingReviewsDelta": "12 flagged",
+      "mrr": "MRR",
+      "mrrDelta": "+6.4% MoM",
+      "revenueChart": "Revenue · trailing 12 months (¥M)",
+      "revenueMix": "Revenue mix",
+      "streamListingPlans": "Listing plans",
+      "streamDataHub": "Data Hub",
+      "streamFeaturedAds": "Featured ads"
+    },
+    "listings": {
+      "pendingCount": "{count, plural, one {# listing} other {# listings}} awaiting review · approve to publish, reject to suspend.",
+      "uncategorized": "Uncategorized",
+      "submitted": "submitted {date}",
+      "byOwner": "by {owner}",
+      "publish": "Publish"
+    },
+    "reviews": {
+      "pendingCount": "{count, plural, one {# review} other {# reviews}} in the moderation queue · human-approved before publishing. Approvals update the business rating live.",
+      "on": "on",
+      "remove": "Remove"
+    },
+    "removals": {
+      "pendingCount": "{count, plural, one {# removal request} other {# removal requests}} · verify the requester before removing.",
+      "reasonLine": "Reason: {reason} · from {email}",
+      "remove": "Remove",
+      "decline": "Decline"
+    },
+    "reports": {
+      "pendingCount": "{count, plural, one {# report} other {# reports}} awaiting review.",
+      "reasonWrongInfo": "Wrong information",
+      "reasonClosed": "Permanently closed",
+      "reasonSpam": "Spam / duplicate",
+      "reasonAbuse": "Abusive review",
+      "reasonOther": "Other",
+      "fromEmail": "from {email}",
+      "resolve": "Resolve",
+      "dismiss": "Dismiss"
+    }
+  },
+  "dataHubApp": {
+    "crumbDataHub": "Data Hub",
+    "crumbApp": "App",
+    "noAds": "No ads",
+    "plan": "Plan",
+    "quotaLine": "Export quota: {remaining} / {quota} rows left",
+    "filters": "Filters",
+    "searchPlaceholder": "Search name or address",
+    "allCategories": "All categories",
+    "allPrefectures": "All prefectures",
+    "hasEmail": "Has email",
+    "hasPhone": "Has phone",
+    "employees": "Employees",
+    "established": "Established",
+    "min": "min",
+    "max": "max",
+    "from": "from",
+    "to": "to",
+    "clearAll": "Clear all",
+    "savedSearches": "Saved searches",
+    "saveCurrent": "Save current",
+    "savedSearchesEmpty": "Save a filter set to reuse it later.",
+    "deleteSavedSearch": "Delete saved search",
+    "nameSearchPrompt": "Name this saved search:",
+    "companiesMatch": "{count} companies match",
+    "saveSearch": "Save search",
+    "exportCsv": "Export CSV",
+    "colCompany": "Company",
+    "colCity": "City",
+    "colCategory": "Category",
+    "colEstablished": "Est.",
+    "colEmployees": "Emp.",
+    "colPhone": "Phone",
+    "colEmail": "Email",
+    "showingFirst": "Showing first 200 of {count} — export to CSV for the full set.",
+    "quotaExceeded": "Export exceeds your remaining quota ({remaining} rows). Narrow the filters or upgrade.",
+    "exportedRows": "Exported {count} rows."
+  },
+  "signIn": {
+    "defaultHeading": "Sign in to NihonPages",
+    "defaultIntro": "Save favorites, write reviews, and manage your listings.",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "email": "Email",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "passwordMinPlaceholder": "At least 8 characters",
+    "imOwner": "I’m a business owner (I’ll manage a listing)",
+    "working": "Working…",
+    "tryDemoAccount": "Try a demo account",
+    "demoUser": "Demo user",
+    "demoOwner": "Demo owner",
+    "demoAdmin": "Demo admin",
+    "demoAccountsNote": "Seeded accounts (password123) — instant preview of each role.",
+    "demoMissing": "Demo accounts missing — run `npm run seed` first."
   }
 }

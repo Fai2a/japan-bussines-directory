@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SignInCard } from '@/components/account/SignInCard';
@@ -12,6 +13,8 @@ import { Stars } from '@/components/ui/Stars';
 type Tab = 'dashboard' | 'listings' | 'reviews' | 'removals' | 'reports';
 
 export default function AdminPage() {
+  const t = useTranslations('admin');
+  const tc = useTranslations('common');
   const { user, ready, signOut } = useAuth();
   const [tab, setTab] = useState<Tab>('dashboard');
 
@@ -19,38 +22,46 @@ export default function AdminPage() {
   if (!user || user.role !== 'admin') {
     return (
       <div className="shell py-12">
-        <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Admin' }]} />
+        <Breadcrumbs items={[{ href: '/', label: tc('home') }, { label: t('crumb') }]} />
         <div className="mt-8">
           {user && user.role !== 'admin' ? (
             <div className="panel mx-auto max-w-md p-6 text-center">
-              <h1 className="font-display text-xl font-bold text-ink">Admins only</h1>
-              <p className="mt-1 text-ink-soft">You’re signed in as <span className="font-medium">{user.role}</span>. Sign in with an admin session to continue.</p>
-              <button onClick={signOut} className="btn btn-secondary mt-4">Switch account</button>
+              <h1 className="font-display text-xl font-bold text-ink">{t('adminsOnly')}</h1>
+              <p className="mt-1 text-ink-soft">{t.rich('signedInAs', { role: user.role, strong: (chunks) => <span className="font-medium">{chunks}</span> })}</p>
+              <button onClick={signOut} className="btn btn-secondary mt-4">{t('switchAccount')}</button>
             </div>
           ) : (
-            <SignInCard heading="Admin sign-in" intro="Moderate listings, reviews and removal requests." defaultRole="admin" />
+            <SignInCard heading={t('signInHeading')} intro={t('signInIntro')} defaultRole="admin" />
           )}
         </div>
       </div>
     );
   }
 
+  const TABS: { id: Tab; label: string }[] = [
+    { id: 'dashboard', label: t('tabs.dashboard') },
+    { id: 'listings', label: t('tabs.listings') },
+    { id: 'reviews', label: t('tabs.reviews') },
+    { id: 'removals', label: t('tabs.removals') },
+    { id: 'reports', label: t('tabs.reports') },
+  ];
+
   return (
     <div className="shell py-8">
-      <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Admin' }]} />
+      <Breadcrumbs items={[{ href: '/', label: tc('home') }, { label: t('crumb') }]} />
       <header className="mt-4 flex items-center justify-between border-b border-rule pb-5">
         <div>
-          <p className="eyebrow">Admin panel</p>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-ink">Moderation & operations</h1>
+          <p className="eyebrow">{t('crumb')}</p>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-ink">{t('title')}</h1>
         </div>
-        <button onClick={signOut} className="btn btn-ghost">Sign out</button>
+        <button onClick={signOut} className="btn btn-ghost">{tc('signOut')}</button>
       </header>
 
       <nav className="mt-5 flex flex-wrap gap-1 border-b border-rule" aria-label="Admin sections">
-        {(['dashboard', 'listings', 'reviews', 'removals', 'reports'] as Tab[]).map((t) => (
-          <button key={t} onClick={() => setTab(t)} aria-current={tab === t}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium capitalize transition-colors ${tab === t ? 'border-seal text-ink' : 'border-transparent text-meta hover:text-ink'}`}>
-            {t}
+        {TABS.map((tItem) => (
+          <button key={tItem.id} onClick={() => setTab(tItem.id)} aria-current={tab === tItem.id}
+            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${tab === tItem.id ? 'border-seal text-ink' : 'border-transparent text-meta hover:text-ink'}`}>
+            {tItem.label}
           </button>
         ))}
       </nav>
@@ -67,18 +78,19 @@ export default function AdminPage() {
 }
 
 function Dashboard() {
+  const t = useTranslations('admin');
   const stats = [
-    { label: 'Companies', value: '222,410', d: '+312 this week' },
-    { label: 'Pending listings', value: '18', d: '4 over 24h' },
-    { label: 'Pending reviews', value: '43', d: '12 flagged' },
-    { label: 'MRR', value: usd(48920), d: '+6.4% MoM' },
+    { label: t('dashboard.companies'), value: '222,410', d: t('dashboard.companiesDelta') },
+    { label: t('dashboard.pendingListings'), value: '18', d: t('dashboard.pendingListingsDelta') },
+    { label: t('dashboard.pendingReviews'), value: '43', d: t('dashboard.pendingReviewsDelta') },
+    { label: t('dashboard.mrr'), value: usd(48920), d: t('dashboard.mrrDelta') },
   ];
   const revenue = [21, 24, 23, 28, 31, 30, 34, 38, 41, 44, 46, 49];
   const max = Math.max(...revenue);
   const streams = [
-    { label: 'Listing plans', value: 62, color: '#C0392B' },
-    { label: 'Data Hub', value: 28, color: '#3B4A6B' },
-    { label: 'Featured ads', value: 10, color: '#B5642B' },
+    { label: t('dashboard.streamListingPlans'), value: 62, color: '#C0392B' },
+    { label: t('dashboard.streamDataHub'), value: 28, color: '#3B4A6B' },
+    { label: t('dashboard.streamFeaturedAds'), value: 10, color: '#B5642B' },
   ];
   return (
     <div className="space-y-6">
@@ -93,7 +105,7 @@ function Dashboard() {
       </div>
       <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
         <div className="panel p-5">
-          <h2 className="mb-4 font-display font-bold text-ink">Revenue · trailing 12 months (¥M)</h2>
+          <h2 className="mb-4 font-display font-bold text-ink">{t('dashboard.revenueChart')}</h2>
           <div className="flex h-40 items-end gap-1.5">
             {revenue.map((v, i) => (
               <div key={i} className="flex-1 rounded-t bg-indigo/85 transition-colors hover:bg-indigo" style={{ height: `${(v / max) * 100}%` }} title={`¥${v}M`} />
@@ -101,7 +113,7 @@ function Dashboard() {
           </div>
         </div>
         <div className="panel p-5">
-          <h2 className="mb-4 font-display font-bold text-ink">Revenue mix</h2>
+          <h2 className="mb-4 font-display font-bold text-ink">{t('dashboard.revenueMix')}</h2>
           <div className="flex h-4 overflow-hidden rounded-full">
             {streams.map((s) => <div key={s.label} style={{ width: `${s.value}%`, background: s.color }} />)}
           </div>
@@ -121,13 +133,14 @@ function Dashboard() {
 
 type Decision = 'pending' | 'approved' | 'rejected';
 
-function DecisionRow({ status, onApprove, onReject, approveLabel = 'Approve', rejectLabel = 'Reject' }: { status: Decision; onApprove: () => void; onReject: () => void; approveLabel?: string; rejectLabel?: string }) {
+function DecisionRow({ status, onApprove, onReject, approveLabel, rejectLabel }: { status: Decision; onApprove: () => void; onReject: () => void; approveLabel?: string; rejectLabel?: string }) {
+  const t = useTranslations('admin');
   if (status !== 'pending')
-    return <span className={`rounded-sm px-2 py-1 text-2xs font-bold uppercase ${status === 'approved' ? 'bg-ok/10 text-ok' : 'bg-seal-wash text-seal-ink'}`}>{status}</span>;
+    return <span className={`rounded-sm px-2 py-1 text-2xs font-bold uppercase ${status === 'approved' ? 'bg-ok/10 text-ok' : 'bg-seal-wash text-seal-ink'}`}>{t(`status.${status}`)}</span>;
   return (
     <div className="flex shrink-0 gap-2">
-      <button onClick={onReject} className="btn btn-secondary px-3 py-1.5 text-sm">{rejectLabel}</button>
-      <button onClick={onApprove} className="btn btn-primary px-3 py-1.5 text-sm">{approveLabel}</button>
+      <button onClick={onReject} className="btn btn-secondary px-3 py-1.5 text-sm">{rejectLabel ?? t('reject')}</button>
+      <button onClick={onApprove} className="btn btn-primary px-3 py-1.5 text-sm">{approveLabel ?? t('approve')}</button>
     </div>
   );
 }
@@ -137,6 +150,7 @@ interface PendingListing {
 }
 
 function ListingsQueue() {
+  const t = useTranslations('admin');
   const [listings, setListings] = useState<PendingListing[] | null>(null);
   const [decided, setDecided] = useState<Record<number, Decision>>({});
   const [error, setError] = useState('');
@@ -144,12 +158,12 @@ function ListingsQueue() {
   useEffect(() => {
     fetch('/api/admin/listings')
       .then(async (res) => {
-        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? 'Failed to load queue.');
+        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? t('loadError'));
         return res.json();
       })
       .then((data: { listings: PendingListing[] }) => setListings(data.listings))
       .catch((e: Error) => setError(e.message));
-  }, []);
+  }, [t]);
 
   async function decide(id: number, action: 'approve' | 'reject') {
     const res = await fetch('/api/admin/listings', {
@@ -167,8 +181,8 @@ function ListingsQueue() {
 
   return (
     <div>
-      <p className="mb-3 text-sm text-meta">{pendingCount} listing{pendingCount === 1 ? '' : 's'} awaiting review · approve to publish, reject to suspend.</p>
-      {listings.length === 0 && <div className="panel p-8 text-center text-ink-soft">Queue is clear — nothing pending.</div>}
+      <p className="mb-3 text-sm text-meta">{t('listings.pendingCount', { count: pendingCount })}</p>
+      {listings.length === 0 && <div className="panel p-8 text-center text-ink-soft">{t('queueClear')}</div>}
       <div className="space-y-2">
         {listings.map((l) => (
           <div key={l.id} className="panel flex items-center gap-3 p-3">
@@ -176,11 +190,11 @@ function ListingsQueue() {
             <div className="min-w-0 flex-1">
               <Link href={`/company/${l.id}/${l.slug}`} className="font-medium text-ink hover:text-indigo">{l.name}</Link>
               <p className="truncate text-xs text-meta">
-                {l.category || 'Uncategorized'} · {l.city} · <span className="capitalize">{l.plan}</span> · submitted {shortDate(l.createdAt)}
-                {l.owner && <> · by {l.owner}</>}
+                {l.category || t('listings.uncategorized')} · {l.city} · <span className="capitalize">{l.plan}</span> · {t('listings.submitted', { date: shortDate(l.createdAt) })}
+                {l.owner && <> · {t('listings.byOwner', { owner: l.owner })}</>}
               </p>
             </div>
-            <DecisionRow status={decided[l.id] ?? 'pending'} onApprove={() => decide(l.id, 'approve')} onReject={() => decide(l.id, 'reject')} approveLabel="Publish" />
+            <DecisionRow status={decided[l.id] ?? 'pending'} onApprove={() => decide(l.id, 'approve')} onReject={() => decide(l.id, 'reject')} approveLabel={t('listings.publish')} />
           </div>
         ))}
       </div>
@@ -197,6 +211,7 @@ interface PendingReview {
 }
 
 function ReviewsQueue() {
+  const t = useTranslations('admin');
   const [reviews, setReviews] = useState<PendingReview[] | null>(null);
   const [decided, setDecided] = useState<Record<string, Decision>>({});
   const [error, setError] = useState('');
@@ -204,12 +219,12 @@ function ReviewsQueue() {
   useEffect(() => {
     fetch('/api/admin/reviews')
       .then(async (res) => {
-        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? 'Failed to load queue.');
+        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? t('loadError'));
         return res.json();
       })
       .then((data: { reviews: PendingReview[] }) => setReviews(data.reviews))
       .catch((e: Error) => setError(e.message));
-  }, []);
+  }, [t]);
 
   async function decide(id: string, action: 'approve' | 'reject') {
     const res = await fetch('/api/admin/reviews', {
@@ -227,8 +242,8 @@ function ReviewsQueue() {
 
   return (
     <div>
-      <p className="mb-3 text-sm text-meta">{pendingCount} review{pendingCount === 1 ? '' : 's'} in the moderation queue · human-approved before publishing. Approvals update the business rating live.</p>
-      {reviews.length === 0 && <div className="panel p-8 text-center text-ink-soft">Queue is clear — nothing pending.</div>}
+      <p className="mb-3 text-sm text-meta">{t('reviews.pendingCount', { count: pendingCount })}</p>
+      {reviews.length === 0 && <div className="panel p-8 text-center text-ink-soft">{t('queueClear')}</div>}
       <div className="space-y-2">
         {reviews.map((r) => (
           <div key={r.id} className="panel p-3">
@@ -236,13 +251,13 @@ function ReviewsQueue() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-ink">{r.authorName}</span>
-                  <span className="text-xs text-meta">on</span>
+                  <span className="text-xs text-meta">{t('reviews.on')}</span>
                   <Link href={`/company/${r.business.id}/${r.business.slug}`} className="truncate text-sm text-indigo hover:underline">{r.business.name}</Link>
                   <Stars rating={r.rating} showValue={false} />
                 </div>
                 <p className="mt-1 text-sm text-ink-soft">{r.text}</p>
               </div>
-              <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'approve')} onReject={() => decide(r.id, 'reject')} approveLabel="Publish" rejectLabel="Remove" />
+              <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'approve')} onReject={() => decide(r.id, 'reject')} approveLabel={t('listings.publish')} rejectLabel={t('reviews.remove')} />
             </div>
           </div>
         ))}
@@ -256,6 +271,7 @@ interface PendingRemoval {
 }
 
 function RemovalsQueue() {
+  const t = useTranslations('admin');
   const [removals, setRemovals] = useState<PendingRemoval[] | null>(null);
   const [decided, setDecided] = useState<Record<string, Decision>>({});
   const [error, setError] = useState('');
@@ -263,12 +279,12 @@ function RemovalsQueue() {
   useEffect(() => {
     fetch('/api/admin/removals')
       .then(async (res) => {
-        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? 'Failed to load queue.');
+        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? t('loadError'));
         return res.json();
       })
       .then((data: { removals: PendingRemoval[] }) => setRemovals(data.removals))
       .catch((e: Error) => setError(e.message));
-  }, []);
+  }, [t]);
 
   async function decide(id: string, action: 'approve' | 'decline') {
     const res = await fetch('/api/admin/removals', {
@@ -286,16 +302,16 @@ function RemovalsQueue() {
 
   return (
     <div>
-      <p className="mb-3 text-sm text-meta">{pendingCount} removal request{pendingCount === 1 ? '' : 's'} · verify the requester before removing.</p>
-      {removals.length === 0 && <div className="panel p-8 text-center text-ink-soft">Queue is clear — nothing pending.</div>}
+      <p className="mb-3 text-sm text-meta">{t('removals.pendingCount', { count: pendingCount })}</p>
+      {removals.length === 0 && <div className="panel p-8 text-center text-ink-soft">{t('queueClear')}</div>}
       <div className="space-y-2">
         {removals.map((r) => (
           <div key={r.id} className="panel flex items-center gap-3 p-3">
             <div className="min-w-0 flex-1">
               <Link href={`/company/${r.business.id}/${r.business.slug}`} className="font-medium text-ink hover:text-indigo">{r.business.name}</Link>
-              <p className="text-xs text-meta">Reason: {r.reason} · from {r.email}</p>
+              <p className="text-xs text-meta">{t('removals.reasonLine', { reason: r.reason, email: r.email })}</p>
             </div>
-            <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'approve')} onReject={() => decide(r.id, 'decline')} approveLabel="Remove" rejectLabel="Decline" />
+            <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'approve')} onReject={() => decide(r.id, 'decline')} approveLabel={t('removals.remove')} rejectLabel={t('removals.decline')} />
           </div>
         ))}
       </div>
@@ -308,11 +324,15 @@ interface PendingReport {
   business: { id: number; slug: string; name: string }; createdAt: string;
 }
 
-const REASON_LABEL: Record<string, string> = {
-  'wrong-info': 'Wrong information', closed: 'Permanently closed', spam: 'Spam / duplicate', abuse: 'Abusive review', other: 'Other',
-};
-
 function ReportsQueue() {
+  const t = useTranslations('admin');
+  const REASON_LABEL: Record<string, string> = {
+    'wrong-info': t('reports.reasonWrongInfo'),
+    closed: t('reports.reasonClosed'),
+    spam: t('reports.reasonSpam'),
+    abuse: t('reports.reasonAbuse'),
+    other: t('reports.reasonOther'),
+  };
   const [reports, setReports] = useState<PendingReport[] | null>(null);
   const [decided, setDecided] = useState<Record<string, Decision>>({});
   const [error, setError] = useState('');
@@ -320,12 +340,12 @@ function ReportsQueue() {
   useEffect(() => {
     fetch('/api/admin/reports')
       .then(async (res) => {
-        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? 'Failed to load queue.');
+        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? t('loadError'));
         return res.json();
       })
       .then((data: { reports: PendingReport[] }) => setReports(data.reports))
       .catch((e: Error) => setError(e.message));
-  }, []);
+  }, [t]);
 
   async function decide(id: string, action: 'resolve' | 'dismiss') {
     const res = await fetch('/api/admin/reports', {
@@ -343,16 +363,16 @@ function ReportsQueue() {
 
   return (
     <div>
-      <p className="mb-3 text-sm text-meta">{pendingCount} report{pendingCount === 1 ? '' : 's'} awaiting review.</p>
-      {reports.length === 0 && <div className="panel p-8 text-center text-ink-soft">Queue is clear — nothing pending.</div>}
+      <p className="mb-3 text-sm text-meta">{t('reports.pendingCount', { count: pendingCount })}</p>
+      {reports.length === 0 && <div className="panel p-8 text-center text-ink-soft">{t('queueClear')}</div>}
       <div className="space-y-2">
         {reports.map((r) => (
           <div key={r.id} className="panel flex items-center gap-3 p-3">
             <div className="min-w-0 flex-1">
               <Link href={`/company/${r.business.id}/${r.business.slug}`} className="font-medium text-ink hover:text-indigo">{r.business.name}</Link>
-              <p className="text-xs text-meta">{REASON_LABEL[r.reason] ?? r.reason} · {r.details}{r.email && <> · from {r.email}</>}</p>
+              <p className="text-xs text-meta">{REASON_LABEL[r.reason] ?? r.reason} · {r.details}{r.email && <> · {t('reports.fromEmail', { email: r.email })}</>}</p>
             </div>
-            <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'resolve')} onReject={() => decide(r.id, 'dismiss')} approveLabel="Resolve" rejectLabel="Dismiss" />
+            <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'resolve')} onReject={() => decide(r.id, 'dismiss')} approveLabel={t('reports.resolve')} rejectLabel={t('reports.dismiss')} />
           </div>
         ))}
       </div>

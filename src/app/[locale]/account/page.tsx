@@ -165,14 +165,16 @@ function EditsTab() {
   );
 }
 
-const PREF_KEY = 'np_notif_prefs';
-
 function NotificationsTab() {
   const t = useTranslations('account');
   const [prefs, setPrefs] = useState<Record<string, boolean>>({ digest: true, replies: true, answers: true, product: false });
+  const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState(false);
   useEffect(() => {
-    try { const raw = localStorage.getItem(PREF_KEY); if (raw) setPrefs(JSON.parse(raw)); } catch {}
+    fetch('/api/account/preferences')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) setPrefs(data); })
+      .finally(() => setReady(true));
   }, []);
 
   const PREFS = [
@@ -182,15 +184,24 @@ function NotificationsTab() {
     { id: 'product', label: t('productTitle'), help: t('productHelp') },
   ];
 
-  function toggle(id: string) {
-    const next = { ...prefs, [id]: !prefs[id] };
-    setPrefs(next);
-    try { localStorage.setItem(PREF_KEY, JSON.stringify(next)); } catch {}
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1600);
+  async function toggle(id: string) {
+    const value = !prefs[id];
+    setPrefs((p) => ({ ...p, [id]: value }));
+    try {
+      const res = await fetch('/api/account/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, value }),
+      });
+      if (!res.ok) throw new Error('save failed');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1600);
+    } catch {
+      setPrefs((p) => ({ ...p, [id]: !value }));
+    }
   }
   return (
-    <div className="panel max-w-xl divide-y divide-rule">
+    <div className={`panel max-w-xl divide-y divide-rule ${ready ? '' : 'opacity-60'}`}>
       {PREFS.map((p) => (
         <div key={p.id} className="flex items-center justify-between gap-4 p-4">
           <div>
@@ -200,6 +211,7 @@ function NotificationsTab() {
           <button
             role="switch"
             aria-checked={prefs[p.id]}
+            disabled={!ready}
             onClick={() => toggle(p.id)}
             className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${prefs[p.id] ? 'bg-ok' : 'bg-[#d8d7cf]'}`}
           >

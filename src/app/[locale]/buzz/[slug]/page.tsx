@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import Image from 'next/image';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -32,9 +33,12 @@ function renderInline(text: string) {
   );
 }
 
-export default function ArticlePage({ params }: { params: { slug: string } }) {
+export default async function ArticlePage({ params }: { params: { slug: string; locale: string } }) {
   const a = ARTICLE_BY_SLUG[params.slug];
   if (!a) notFound();
+  setRequestLocale(params.locale);
+  const t = await getTranslations('buzz');
+  const tc = await getTranslations('common');
   const more = ARTICLES.filter((x) => x.slug !== a.slug).slice(0, 3);
 
   const jsonLd = {
@@ -51,12 +55,12 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
   return (
     <div className="shell py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/buzz', label: 'Buzz' }, { label: a.title }]} />
+      <Breadcrumbs items={[{ href: '/', label: tc('home') }, { href: '/buzz', label: t('crumb') }, { label: a.title }]} />
 
       <article className="mx-auto mt-4 max-w-prose">
         <span className="text-xs font-semibold uppercase tracking-wide text-seal">{a.category}</span>
         <h1 className="mt-2 font-display text-3xl font-extrabold leading-tight tracking-tight text-ink sm:text-4xl">{a.title}</h1>
-        <p className="mt-3 text-xs text-meta">{a.author} · {shortDate(a.date)} · {a.readMins} min read</p>
+        <p className="mt-3 text-xs text-meta">{a.author} · {shortDate(a.date)} · {t('readMins', { count: a.readMins })}</p>
 
         <div className="relative mt-6 aspect-[16/9] overflow-hidden rounded-lg border border-rule">
           <Image src={a.cover} alt="" fill priority sizes="(max-width: 768px) 100vw, 680px" className="object-cover" />
@@ -69,13 +73,13 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
         </div>
 
         <div className="mt-8 flex items-center justify-between border-t border-rule pt-5">
-          <Link href="/buzz" className="link text-sm font-semibold">← All articles</Link>
-          <Link href="/get-listed" className="btn btn-primary">Get your business listed</Link>
+          <Link href="/buzz" className="link text-sm font-semibold">{t('allArticles')}</Link>
+          <Link href="/get-listed" className="btn btn-primary">{t('getListedCta')}</Link>
         </div>
       </article>
 
       <section className="mx-auto mt-12 max-w-4xl">
-        <h2 className="mb-4 font-display text-xl font-bold text-ink">More from Buzz</h2>
+        <h2 className="mb-4 font-display text-xl font-bold text-ink">{t('moreFromBuzz')}</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           {more.map((m) => (
             <Link key={m.slug} href={`/buzz/${m.slug}`} className="group flex flex-col overflow-hidden rounded-md border border-rule">
