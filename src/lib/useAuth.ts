@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { useSession, signIn as nextSignIn, signOut as nextSignOut } from 'next-auth/react';
+import { clearFavoritesLocal } from './useFavorites';
 
 // ---------------------------------------------------------------------------
 // Real auth, backed by Auth.js JWT sessions over the Prisma User table.
@@ -65,6 +66,7 @@ export function useAuth() {
   );
 
   const signOut = useCallback(() => {
+    clearFavoritesLocal();
     void nextSignOut({ redirect: false });
   }, []);
 

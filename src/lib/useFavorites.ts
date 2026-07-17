@@ -36,6 +36,19 @@ function broadcast(ids: number[]) {
   } catch {}
 }
 
+/**
+ * Wipes the guest/offline favorites copy and the merge flag. Must run on
+ * sign-out — otherwise the next account to sign in on this browser inherits
+ * the previous user's favorites via the guest-merge path above.
+ */
+export function clearFavoritesLocal() {
+  try {
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(MERGED_KEY);
+  } catch {}
+  broadcast([]);
+}
+
 export function useFavorites() {
   const { data: session, status } = useSession();
   const authed = Boolean(session?.user);

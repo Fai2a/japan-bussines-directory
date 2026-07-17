@@ -23,6 +23,32 @@ export interface DraftPayload {
 }
 
 /**
+ * The Get-Listed wizard collects hours as `{ open, close, closed }` per day
+ * (a natural shape for a time-picker + toggle UI), but every reader in the
+ * app (openStatus, HoursTable, the seed data) expects `[open, close] | null`.
+ * Normalize here, at the single point hours get persisted, so a malformed
+ * shape can never reach the database — regardless of what a client sends.
+ */
+function normalizeHours(raw: Record<string, unknown> | undefined): Record<string, [string, string] | null> {
+  const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+  const out: Record<string, [string, string] | null> = {};
+  for (const day of days) {
+    const v = raw?.[day] as unknown;
+    if (Array.isArray(v) && typeof v[0] === 'string' && typeof v[1] === 'string') {
+      out[day] = [v[0], v[1]];
+      continue;
+    }
+    const obj = v as { open?: unknown; close?: unknown; closed?: unknown } | null | undefined;
+    if (obj && typeof obj === 'object' && !obj.closed && typeof obj.open === 'string' && typeof obj.close === 'string') {
+      out[day] = [obj.open, obj.close];
+    } else {
+      out[day] = null;
+    }
+  }
+  return out;
+}
+
+/**
  * Converts a paid-for PendingListing into a real Business row (status
  * IN_REVIEW, so it still goes through the normal admin moderation queue).
  * Called from two places: the checkout route's simulated (no Stripe key)
@@ -72,7 +98,7 @@ export async function createListingFromDraft(
       established: Number(body.established) || new Date().getFullYear(),
       employees: Number(body.employees) || 1,
       manager: '',
-      hours: JSON.stringify(body.hours ?? {}),
+      hours: JSON.stringify(normalizeHours(body.hours)),
       plan: plan.toUpperCase(),
       status: 'IN_REVIEW',
       stripeCustomerId: stripeInfo?.customerId ?? null,

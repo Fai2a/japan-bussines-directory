@@ -317,7 +317,9 @@
     "answersHelp": "When a question you asked gets answered.",
     "productTitle": "Product news",
     "productHelp": "Occasional updates about NihonPages features.",
-    "preferencesSaved": "Preferences saved"
+    "preferencesSaved": "Preferences saved",
+    "statusRejected": "rejected",
+    "ownerReplyLabel": "Response from the owner"
   },
   "claim": {
     "crumb": "Claim a listing",
@@ -679,7 +681,8 @@
       "listings": "Listings",
       "reviews": "Reviews",
       "removals": "Removals",
-      "reports": "Reports"
+      "reports": "Reports",
+      "suggestions": "Suggestions"
     },
     "status": {
       "approved": "approved",
@@ -732,6 +735,12 @@
       "fromEmail": "from {email}",
       "resolve": "Resolve",
       "dismiss": "Dismiss"
+    },
+    "suggestions": {
+      "pendingCount": "{count, plural, one {# suggested edit} other {# suggested edits}} awaiting review.",
+      "byAuthor": "suggested by {name}",
+      "apply": "Mark applied",
+      "reject": "Reject"
     }
   },
   "dataHubApp": {
@@ -791,5 +800,22 @@
     "demoAdmin": "Demo admin",
     "demoAccountsNote": "Seeded accounts (password123) — instant preview of each role.",
     "demoMissing": "Demo accounts missing — run `npm run seed` first."
+  },
+  "apiKeys": {
+    "title": "API access",
+    "intro": "Read-only access to the company database — Enterprise plan feature. Requests are rate-limited per key.",
+    "signInToManage": "Sign in to generate an API key.",
+    "newKeyTitle": "Your new key (shown once)",
+    "newKeyWarning": "Copy it now — you won’t be able to see it again.",
+    "dismiss": "Dismiss",
+    "noKeys": "No API keys yet.",
+    "usage": "{used} / {limit} requests today",
+    "revoked": "Revoked",
+    "revoke": "Revoke",
+    "labelPlaceholder": "Key label (e.g. “CRM sync”)",
+    "generate": "Generate key",
+    "creating": "Generating…",
+    "createError": "Could not create the key.",
+    "docsNote": "GET /api/v1/businesses with header “Authorization: Bearer YOUR_KEY”. Filters: category, city, q, page, limit."
   }
 }

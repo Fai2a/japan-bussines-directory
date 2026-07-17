@@ -36,7 +36,7 @@ function Histogram({ rating, count }: { rating: number; count: number }) {
   );
 }
 
-function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; businessId: number; businessName: string }) {
+function ReviewForm({ onDone, businessId }: { onDone: () => void; businessId: number }) {
   const t = useTranslations('company');
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
@@ -45,16 +45,6 @@ function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [needsSignIn, setNeedsSignIn] = useState(false);
-
-  function persistLocal() {
-    // Mirror into the account page's "My reviews" list.
-    try {
-      const key = 'np_my_reviews';
-      const prev = JSON.parse(localStorage.getItem(key) || '[]');
-      prev.unshift({ businessId, businessName, rating, text: text.trim(), date: new Date().toISOString(), status: 'pending' });
-      localStorage.setItem(key, JSON.stringify(prev));
-    } catch {}
-  }
 
   async function submitToApi(): Promise<boolean> {
     const res = await fetch('/api/reviews', {
@@ -93,10 +83,7 @@ function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; 
         setBusy(true);
         const ok = await submitToApi();
         setBusy(false);
-        if (ok) {
-          persistLocal();
-          setSent(true);
-        }
+        if (ok) setSent(true);
       }}
       className="panel space-y-3 p-4"
     >
@@ -147,7 +134,7 @@ function ReviewForm({ onDone, businessId, businessName }: { onDone: () => void; 
   );
 }
 
-export function ReviewSection({ reviews, rating, count, businessId, businessName }: { reviews: Review[]; rating: number; count: number; businessId: number; businessName: string }) {
+export function ReviewSection({ reviews, rating, count, businessId }: { reviews: Review[]; rating: number; count: number; businessId: number }) {
   const [writing, setWriting] = useState(false);
   const t = useTranslations('company');
 
@@ -164,7 +151,7 @@ export function ReviewSection({ reviews, rating, count, businessId, businessName
 
       {writing && (
         <div className="mb-5">
-          <ReviewForm onDone={() => setWriting(false)} businessId={businessId} businessName={businessName} />
+          <ReviewForm onDone={() => setWriting(false)} businessId={businessId} />
         </div>
       )}
 

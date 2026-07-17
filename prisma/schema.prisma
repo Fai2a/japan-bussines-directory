@@ -342,15 +342,22 @@ model AdPlacement {
   @@index([categorySlug, citySlug])
 }
 
+// Backs the public read-only Data Hub API (GET /api/v1/businesses), the
+// "Read-only public API" feature listed on the Enterprise Data Hub plan.
+// rateLimit is requests per rolling 24h window, tracked via requestCount +
+// windowStart (reset whenever a request lands more than 24h after windowStart).
 model ApiKey {
-  id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
-  keyHash    String   @unique
-  label      String
-  rateLimit  Int      @default(1000)
-  createdAt  DateTime @default(now())
-  revokedAt  DateTime?
+  id           String    @id @default(cuid())
+  user         User      @relation(fields: [userId], references: [id])
+  userId       String
+  keyHash      String    @unique
+  keyPrefix    String // first 10 chars of the raw key, shown in the UI so a user can tell keys apart without re-exposing the secret
+  label        String
+  rateLimit    Int       @default(1000)
+  requestCount Int       @default(0)
+  windowStart  DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  revokedAt    DateTime?
 }
 
 model AuditLog {

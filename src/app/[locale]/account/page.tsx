@@ -13,12 +13,14 @@ import { shortDate } from '@/lib/format';
 
 type Tab = 'favorites' | 'reviews' | 'edits' | 'notifications';
 
-interface StoredReview { businessId: number; businessName: string; rating: number; text: string; date: string; status: 'pending' | 'published' }
-interface StoredEdit { businessId: number; businessName: string; summary: string; date: string; status: 'pending' | 'applied' }
-
-function readJson<T>(key: string): T[] {
-  if (typeof window === 'undefined') return [];
-  try { return JSON.parse(localStorage.getItem(key) || '[]') as T[]; } catch { return []; }
+interface MyReview {
+  id: string; businessId: number; businessSlug: string; businessName: string;
+  rating: number; text: string; status: 'PENDING' | 'APPROVED' | 'REJECTED'; createdAt: string;
+  ownerReply: { text: string; createdAt: string } | null;
+}
+interface MySuggestion {
+  id: string; businessId: number; businessSlug: string; businessName: string;
+  summary: string; status: string; createdAt: string;
 }
 
 export default function AccountPage() {
@@ -121,22 +123,36 @@ function FavoritesTab() {
 }
 
 function ReviewsTab() {
-  const [reviews, setReviews] = useState<StoredReview[]>([]);
+  const [reviews, setReviews] = useState<MyReview[] | null>(null);
   const t = useTranslations('account');
-  useEffect(() => { setReviews(readJson<StoredReview>('np_my_reviews')); }, []);
+  useEffect(() => {
+    fetch('/api/account/reviews')
+      .then((r) => (r.ok ? r.json() : { reviews: [] }))
+      .then((d: { reviews: MyReview[] }) => setReviews(d.reviews))
+      .catch(() => setReviews([]));
+  }, []);
+  if (reviews === null) return <div className="space-y-2">{[0, 1].map((i) => <div key={i} className="skeleton h-24 rounded-md" />)}</div>;
   if (reviews.length === 0)
     return <EmptyState title={t('noReviewsTitle')} body={t('noReviewsBody')} cta={{ href: '/categories', label: t('findBusinessToReview') }} />;
   return (
     <ul className="space-y-3">
-      {reviews.map((r, i) => (
-        <li key={i} className="panel p-4">
+      {reviews.map((r) => (
+        <li key={r.id} className="panel p-4">
           <div className="flex items-center justify-between gap-3">
-            <span className="font-display font-bold text-ink">{r.businessName}</span>
-            <span className={`rounded-sm px-1.5 py-0.5 text-2xs font-semibold uppercase ${r.status === 'published' ? 'bg-ok/10 text-ok' : 'bg-warn/15 text-warn'}`}>{r.status === 'published' ? t('statusPublished') : t('statusPending')}</span>
+            <Link href={`/company/${r.businessId}/${r.businessSlug}`} className="font-display font-bold text-ink hover:text-indigo">{r.businessName}</Link>
+            <span className={`rounded-sm px-1.5 py-0.5 text-2xs font-semibold uppercase ${r.status === 'APPROVED' ? 'bg-ok/10 text-ok' : r.status === 'REJECTED' ? 'bg-seal-wash text-seal-ink' : 'bg-warn/15 text-warn'}`}>
+              {r.status === 'APPROVED' ? t('statusPublished') : r.status === 'REJECTED' ? t('statusRejected') : t('statusPending')}
+            </span>
           </div>
           <p className="tnum mt-1 text-sm text-seal">{'★'.repeat(r.rating)}<span className="text-rule">{'★'.repeat(5 - r.rating)}</span></p>
           <p className="mt-1 text-sm text-ink-soft">{r.text}</p>
-          <p className="mt-1 text-xs text-meta">{shortDate(r.date)}</p>
+          <p className="mt-1 text-xs text-meta">{shortDate(r.createdAt)}</p>
+          {r.ownerReply && (
+            <div className="mt-3 rounded-md border-l-2 border-indigo bg-indigo-wash/50 p-3">
+              <p className="text-xs font-semibold text-indigo">{t('ownerReplyLabel')}</p>
+              <p className="mt-1 text-sm text-ink-soft">{r.ownerReply.text}</p>
+            </div>
+          )}
         </li>
       ))}
     </ul>
@@ -144,21 +160,29 @@ function ReviewsTab() {
 }
 
 function EditsTab() {
-  const [edits, setEdits] = useState<StoredEdit[]>([]);
+  const [edits, setEdits] = useState<MySuggestion[] | null>(null);
   const t = useTranslations('account');
-  useEffect(() => { setEdits(readJson<StoredEdit>('np_my_edits')); }, []);
+  useEffect(() => {
+    fetch('/api/account/suggestions')
+      .then((r) => (r.ok ? r.json() : { suggestions: [] }))
+      .then((d: { suggestions: MySuggestion[] }) => setEdits(d.suggestions))
+      .catch(() => setEdits([]));
+  }, []);
+  if (edits === null) return <div className="space-y-2">{[0, 1].map((i) => <div key={i} className="skeleton h-16 rounded-md" />)}</div>;
   if (edits.length === 0)
     return <EmptyState title={t('noEditsTitle')} body={t('noEditsBody')} />;
   return (
     <ul className="space-y-3">
-      {edits.map((e, i) => (
-        <li key={i} className="panel flex items-center justify-between gap-3 p-4">
+      {edits.map((e) => (
+        <li key={e.id} className="panel flex items-center justify-between gap-3 p-4">
           <div>
-            <p className="font-medium text-ink">{e.businessName}</p>
+            <Link href={`/company/${e.businessId}/${e.businessSlug}`} className="font-medium text-ink hover:text-indigo">{e.businessName}</Link>
             <p className="text-sm text-ink-soft">{e.summary}</p>
-            <p className="text-xs text-meta">{shortDate(e.date)}</p>
+            <p className="text-xs text-meta">{shortDate(e.createdAt)}</p>
           </div>
-          <span className={`rounded-sm px-1.5 py-0.5 text-2xs font-semibold uppercase ${e.status === 'applied' ? 'bg-ok/10 text-ok' : 'bg-warn/15 text-warn'}`}>{e.status === 'applied' ? t('statusApplied') : t('statusPending')}</span>
+          <span className={`rounded-sm px-1.5 py-0.5 text-2xs font-semibold uppercase ${e.status === 'APPLIED' ? 'bg-ok/10 text-ok' : e.status === 'REJECTED' ? 'bg-seal-wash text-seal-ink' : 'bg-warn/15 text-warn'}`}>
+            {e.status === 'APPLIED' ? t('statusApplied') : e.status === 'REJECTED' ? t('statusRejected') : t('statusPending')}
+          </span>
         </li>
       ))}
     </ul>

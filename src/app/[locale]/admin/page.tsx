@@ -10,7 +10,7 @@ import { shortDate, usd } from '@/lib/format';
 import { Monogram } from '@/components/ui/Monogram';
 import { Stars } from '@/components/ui/Stars';
 
-type Tab = 'dashboard' | 'listings' | 'reviews' | 'removals' | 'reports';
+type Tab = 'dashboard' | 'listings' | 'reviews' | 'removals' | 'reports' | 'suggestions';
 
 export default function AdminPage() {
   const t = useTranslations('admin');
@@ -44,6 +44,7 @@ export default function AdminPage() {
     { id: 'reviews', label: t('tabs.reviews') },
     { id: 'removals', label: t('tabs.removals') },
     { id: 'reports', label: t('tabs.reports') },
+    { id: 'suggestions', label: t('tabs.suggestions') },
   ];
 
   return (
@@ -72,6 +73,7 @@ export default function AdminPage() {
         {tab === 'reviews' && <ReviewsQueue />}
         {tab === 'removals' && <RemovalsQueue />}
         {tab === 'reports' && <ReportsQueue />}
+        {tab === 'suggestions' && <SuggestionsQueue />}
       </div>
     </div>
   );
@@ -373,6 +375,60 @@ function ReportsQueue() {
               <p className="text-xs text-meta">{REASON_LABEL[r.reason] ?? r.reason} · {r.details}{r.email && <> · {t('reports.fromEmail', { email: r.email })}</>}</p>
             </div>
             <DecisionRow status={decided[r.id] ?? 'pending'} onApprove={() => decide(r.id, 'resolve')} onReject={() => decide(r.id, 'dismiss')} approveLabel={t('reports.resolve')} rejectLabel={t('reports.dismiss')} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface PendingSuggestion {
+  id: string; changes: string; author: { name: string | null; email: string } | null;
+  business: { id: number; slug: string; name: string }; createdAt: string;
+}
+
+function SuggestionsQueue() {
+  const t = useTranslations('admin');
+  const [suggestions, setSuggestions] = useState<PendingSuggestion[] | null>(null);
+  const [decided, setDecided] = useState<Record<string, Decision>>({});
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch('/api/admin/suggestions')
+      .then(async (res) => {
+        if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? t('loadError'));
+        return res.json();
+      })
+      .then((data: { suggestions: PendingSuggestion[] }) => setSuggestions(data.suggestions))
+      .catch((e: Error) => setError(e.message));
+  }, [t]);
+
+  async function decide(id: string, action: 'apply' | 'reject') {
+    const res = await fetch('/api/admin/suggestions', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, action }),
+    });
+    if (res.ok) setDecided((d) => ({ ...d, [id]: action === 'apply' ? 'approved' : 'rejected' }));
+  }
+
+  if (error) return <div className="panel p-6 text-sm text-seal-ink">{error}</div>;
+  if (!suggestions) return <div className="space-y-2">{[0, 1, 2].map((i) => <div key={i} className="skeleton h-16 rounded-md" />)}</div>;
+
+  const pendingCount = suggestions.filter((s) => !decided[s.id]).length;
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-meta">{t('suggestions.pendingCount', { count: pendingCount })}</p>
+      {suggestions.length === 0 && <div className="panel p-8 text-center text-ink-soft">{t('queueClear')}</div>}
+      <div className="space-y-2">
+        {suggestions.map((s) => (
+          <div key={s.id} className="panel flex items-center gap-3 p-3">
+            <div className="min-w-0 flex-1">
+              <Link href={`/company/${s.business.id}/${s.business.slug}`} className="font-medium text-ink hover:text-indigo">{s.business.name}</Link>
+              <p className="text-xs text-meta">{s.changes}{s.author && <> · {t('suggestions.byAuthor', { name: s.author.name ?? s.author.email })}</>}</p>
+            </div>
+            <DecisionRow status={decided[s.id] ?? 'pending'} onApprove={() => decide(s.id, 'apply')} onReject={() => decide(s.id, 'reject')} approveLabel={t('suggestions.apply')} rejectLabel={t('suggestions.reject')} />
           </div>
         ))}
       </div>

@@ -17,19 +17,33 @@ const FIELDS = [
 export function SuggestEditClient({ id, slug, name }: { id: number; slug: string; name: string }) {
   const [field, setField] = useState('hours');
   const [value, setValue] = useState('');
-  const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [needsSignIn, setNeedsSignIn] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!value.trim()) return;
-    try {
-      const key = 'np_my_edits';
-      const prev = JSON.parse(localStorage.getItem(key) || '[]');
-      const label = FIELDS.find((f) => f.id === field)?.label ?? field;
-      prev.unshift({ businessId: id, businessName: name, summary: `${label}: ${value.trim()}`, date: new Date().toISOString(), status: 'pending' });
-      localStorage.setItem(key, JSON.stringify(prev));
-    } catch {}
+    if (!value.trim() || busy) return;
+    setBusy(true);
+    setError('');
+    const label = FIELDS.find((f) => f.id === field)?.label ?? field;
+    const res = await fetch('/api/suggestions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessId: id, changes: `${label}: ${value.trim()}` }),
+    });
+    setBusy(false);
+    if (res.status === 401) {
+      setError('Sign in to suggest an edit.');
+      setNeedsSignIn(true);
+      return;
+    }
+    if (!res.ok) {
+      setError('Something went wrong. Try again.');
+      setNeedsSignIn(false);
+      return;
+    }
     setSent(true);
   }
 
@@ -69,11 +83,14 @@ export function SuggestEditClient({ id, slug, name }: { id: number; slug: string
             <span className="mb-1 block text-sm font-medium text-ink">The correct information</span>
             <textarea value={value} onChange={(e) => setValue(e.target.value)} rows={3} placeholder="Tell us what it should say…" className="w-full rounded-md border border-rule bg-panel p-3 text-sm focus:outline-none focus-visible:border-indigo" />
           </label>
-          <label className="block">
-            <span className="mb-1 block text-sm font-medium text-ink">Your email <span className="font-normal text-meta">(optional — to notify you)</span></span>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.jp" className="w-full rounded-md border border-rule bg-panel px-3 py-2 text-sm focus:outline-none focus-visible:border-indigo" />
-          </label>
-          <button type="submit" disabled={!value.trim()} className="btn btn-primary w-full disabled:opacity-50">Submit suggestion</button>
+          {error && (
+            <p className="rounded-sm bg-seal-wash px-3 py-2 text-sm text-seal-ink" role="alert">
+              {error}{needsSignIn && <> <a href="/account" className="font-semibold underline">Sign in</a></>}
+            </p>
+          )}
+          <button type="submit" disabled={!value.trim() || busy} className="btn btn-primary w-full disabled:opacity-50">
+            {busy ? 'Submitting…' : 'Submit suggestion'}
+          </button>
         </form>
       </div>
     </div>

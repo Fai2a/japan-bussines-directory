@@ -22,11 +22,12 @@ export function HoursTable({ b }: { b: Business }) {
         <tbody>
           {ORDER.map((d) => {
             const h = b.hours[d];
+            const valid = Array.isArray(h) && typeof h[0] === 'string' && typeof h[1] === 'string';
             const isToday = d === todayKey;
             return (
               <tr key={d} className={isToday ? 'font-semibold text-ink' : 'text-ink-soft'}>
                 <td className="py-1 pr-4">{t(d)}{isToday && <span className="ml-1 text-2xs text-meta">{t('today')}</span>}</td>
-                <td className="tnum py-1 text-right">{h ? `${h[0]} – ${h[1]}` : <span className="text-meta">{t('closed')}</span>}</td>
+                <td className="tnum py-1 text-right">{valid ? `${h[0]} – ${h[1]}` : <span className="text-meta">{t('closed')}</span>}</td>
               </tr>
             );
           })}

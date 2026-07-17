@@ -180,7 +180,7 @@ export default async function CompanyPage({ params }: { params: { id: string; sl
             </section>
           )}
 
-          <ReviewSection reviews={b.reviews} rating={b.rating} count={b.reviewCount} businessId={b.id} businessName={b.name} />
+          <ReviewSection reviews={b.reviews} rating={b.rating} count={b.reviewCount} businessId={b.id} />
 
           <QASection businessId={b.id} businessName={b.name} />
         </div>

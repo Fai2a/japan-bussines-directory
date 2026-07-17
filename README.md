@@ -88,7 +88,13 @@ everything else. Demo accounts seeded for each role — password `password123`:
   admin APIs 403 for non-admins.
 - **Reviews** — `POST /api/reviews` (auth required, honeypot) → `PENDING` →
   admin approves via `PATCH /api/admin/reviews`, which recomputes the business
-  rating, emails the reviewer, and writes an `AuditLog` row.
+  rating, emails the reviewer, and writes an `AuditLog` row. The account
+  page's "My reviews" tab reads real data back via `GET /api/account/reviews`
+  (scoped to the signed-in user) — it's not a local cache.
+- **Suggest an edit** — `POST /api/suggestions` (auth required) writes a real
+  `EditSuggestion` row; the account page's "Suggested edits" tab reads it back
+  via `GET /api/account/suggestions`. (Admin review/approval of suggestions
+  isn't wired up yet — they stay `PENDING`.)
 - **Listings & payments** — the wizard stashes the form as a `PendingListing`
   draft, *then* pays. `POST /api/checkout` creates a real Stripe **test-mode**
   Checkout Session (one-time or yearly subscription) when `STRIPE_SECRET_KEY`
@@ -102,6 +108,13 @@ everything else. Demo accounts seeded for each role — password `password123`:
   `src/lib/server/email.ts`. With `RESEND_API_KEY` set it sends for real;
   without one, sends land in the `EmailLog` table instead of an inbox, so the
   whole feature is testable with zero provider setup.
+- **Public Data Hub API** — the Enterprise plan's "Read-only public API" is
+  real: generate a key from the "API access" panel in `/saas/app` (max 3 per
+  account), then call `GET /api/v1/businesses` with
+  `Authorization: Bearer <key>` — filters: `category`, `city`, `q`, `page`,
+  `limit` (≤50). Each key enforces its own rolling-24h rate limit
+  (`ApiKey.rateLimit`, default 1000/day) and can be revoked instantly from
+  the same panel.
 - **Notifications** — the account page's toggles (`/api/account/preferences`)
   are real per-user server state, not `localStorage`. Turning on "review
   replies" or "Q&A answers" makes `/api/owner/replies` and `/api/answers`

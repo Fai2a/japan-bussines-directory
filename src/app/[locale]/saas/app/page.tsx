@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
+import { ApiKeysPanel } from '@/components/saas/ApiKeysPanel';
 import { BUSINESSES } from '@/lib/businesses';
 import { CATEGORY_BY_SLUG, CATEGORIES } from '@/lib/categories';
 import { CITY_BY_SLUG, CITIES, PREFECTURES } from '@/lib/cities';
@@ -189,6 +190,8 @@ export default function DataHubApp() {
               </ul>
             )}
           </div>
+
+          <ApiKeysPanel />
         </aside>
 
         {/* Table */}

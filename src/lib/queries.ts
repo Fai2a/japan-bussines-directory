@@ -43,7 +43,8 @@ export function openStatus(
 ): { open: boolean; label: string; kind: OpenStatusKind; time?: string } {
   const day = DAY_KEYS[now.getDay()];
   const today = b.hours[day];
-  if (!today) return { open: false, label: 'Closed today', kind: 'closedToday' };
+  if (!today || !Array.isArray(today) || typeof today[0] !== 'string' || typeof today[1] !== 'string')
+    return { open: false, label: 'Closed today', kind: 'closedToday' };
   const [oh, om] = today[0].split(':').map(Number);
   const [ch, cm] = today[1].split(':').map(Number);
   const mins = now.getHours() * 60 + now.getMinutes();

@@ -317,7 +317,9 @@
     "answersHelp": "あなたの質問に回答があったとき。",
     "productTitle": "製品情報",
     "productHelp": "NihonPagesの新機能に関するお知らせ（不定期）。",
-    "preferencesSaved": "設定を保存しました"
+    "preferencesSaved": "設定を保存しました",
+    "statusRejected": "却下",
+    "ownerReplyLabel": "オーナーからの返信"
   },
   "claim": {
     "crumb": "掲載を申請",
@@ -679,7 +681,8 @@
       "listings": "掲載",
       "reviews": "レビュー",
       "removals": "削除申請",
-      "reports": "通報"
+      "reports": "通報",
+      "suggestions": "編集提案"
     },
     "status": {
       "approved": "承認済み",
@@ -732,6 +735,12 @@
       "fromEmail": "通報者：{email}",
       "resolve": "対応済みにする",
       "dismiss": "却下する"
+    },
+    "suggestions": {
+      "pendingCount": "審査待ちの編集提案 {count}件。",
+      "byAuthor": "提案者：{name}",
+      "apply": "反映済みにする",
+      "reject": "却下"
     }
   },
   "dataHubApp": {
@@ -791,5 +800,22 @@
     "demoAdmin": "デモ管理者",
     "demoAccountsNote": "シード済みアカウント（パスワード：password123）— 各ロールをすぐに試せます。",
     "demoMissing": "デモアカウントが見つかりません — 先に `npm run seed` を実行してください。"
+  },
+  "apiKeys": {
+    "title": "API アクセス",
+    "intro": "企業データベースへの読み取り専用アクセス — エンタープライズプランの機能です。リクエストはキーごとに制限されます。",
+    "signInToManage": "APIキーを発行するにはサインインしてください。",
+    "newKeyTitle": "新しいキー（一度だけ表示されます）",
+    "newKeyWarning": "今すぐコピーしてください — 二度と表示されません。",
+    "dismiss": "閉じる",
+    "noKeys": "まだAPIキーはありません。",
+    "usage": "本日 {used} / {limit} リクエスト",
+    "revoked": "失効済み",
+    "revoke": "失効させる",
+    "labelPlaceholder": "キーの名前（例：「CRM連携」）",
+    "generate": "キーを発行",
+    "creating": "発行中…",
+    "createError": "キーを作成できませんでした。",
+    "docsNote": "GET /api/v1/businesses に「Authorization: Bearer YOUR_KEY」ヘッダーを付けてリクエストしてください。フィルター：category, city, q, page, limit。"
   }
 }
